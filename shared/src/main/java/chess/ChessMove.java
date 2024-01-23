@@ -66,4 +66,13 @@ public class ChessMove {
 
         return this.startPosition.equals(c.startPosition) && this.endPostion.equals(c.endPostion) && promotionPiece == c.promotionPiece;
     }
+
+    @Override
+    public String toString() {
+        return "Move{" +
+                startPosition +
+                ", " + endPostion +
+                ", " + promotionPiece +
+                "}\n";
+    }
 }

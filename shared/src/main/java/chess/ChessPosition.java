@@ -50,4 +50,11 @@ public class ChessPosition {
 
         return this.row == c.row && this.col == c.col;
     }
+
+    @Override
+    public String toString() {
+        return '(' + row +
+                ", " + col +
+                ')';
+    }
 }
