@@ -33,7 +33,7 @@ public class ChessPosition {
 
     @Override
     public int hashCode() {
-        return row + col;
+        return 157 * row + col;
     }
 
     @Override
@@ -53,8 +53,8 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return '(' + row +
+        return "(" + row +
                 ", " + col +
-                ')';
+                ")";
     }
 }

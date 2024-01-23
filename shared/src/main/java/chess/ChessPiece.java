@@ -72,7 +72,7 @@ public class ChessPiece {
                 potentialMoves = rookMoves(board, myPosition);
                 break;
             case PAWN:
-                System.out.println("P");
+                potentialMoves = pawnMoves(board, myPosition);
                 break;
             default:
                 return null;
@@ -414,6 +414,102 @@ public class ChessPiece {
             } else if (myBoard.getPiece(potentialPosition) == null) {
                 ChessMove potentialMove = new ChessMove(currentPos, potentialPosition, null);
                 potentialMoves.add(potentialMove);
+            }
+        }
+
+        return potentialMoves;
+    }
+
+    private Collection<ChessMove> pawnMoves(ChessBoard myBoard, ChessPosition currentPos) {
+        int currentRow = currentPos.getRow();
+        int currentCol = currentPos.getColumn();
+
+        Collection<ChessPosition> potentialPositions = new HashSet<>();
+        Collection<ChessMove> potentialMoves = new HashSet<>();
+
+        // If pawn is in start position, it can move 2 squares
+        // If pawn moves into opposing team's back line, it can receive a promotion
+        // TODO: EN PASSANT
+
+        // White team
+        if (myBoard.getPiece(currentPos).pieceColor == ChessGame.TeamColor.WHITE) {
+            // Look up once
+            ChessPosition above = new ChessPosition(currentRow + 1, currentCol);
+            if(myBoard.getPiece(above) == null){
+                potentialPositions.add(above);
+                ChessPosition twoAbove = new ChessPosition(currentRow + 2, currentCol);
+                if (currentRow == 2 && myBoard.getPiece(twoAbove) == null) {
+                    // Look up twice if once is safe
+                    potentialPositions.add(twoAbove);
+                }
+            }
+            // Look at diagonals. Check that the piece there is an enemy
+            ChessPosition upLeft = new ChessPosition(currentRow + 1, currentCol - 1);
+            ChessPosition upRight = new ChessPosition(currentRow + 1, currentCol + 1);
+            if (myBoard.getPiece(upLeft) != null && myBoard.getPiece(upLeft).pieceColor != this.pieceColor) {
+                potentialPositions.add(upLeft);
+            }
+            if (myBoard.getPiece(upRight) != null && myBoard.getPiece(upRight).pieceColor != this.pieceColor) {
+                potentialPositions.add(upRight);
+            }
+        }
+        // Black team
+        else if (myBoard.getPiece(currentPos).pieceColor == ChessGame.TeamColor.BLACK) {
+            // Look down once
+            ChessPosition below = new ChessPosition(currentRow - 1, currentCol);
+            if(myBoard.getPiece(below) == null){
+                potentialPositions.add(below);
+                ChessPosition twoBelow = new ChessPosition(currentRow - 2, currentCol);
+                if (currentRow == 7 && myBoard.getPiece(twoBelow) == null) {
+                    // Look down twice if once is safe
+                    potentialPositions.add(twoBelow);
+                }
+            }
+            // Look at diagonals. Check that the piece there is an enemy
+            ChessPosition downLeft = new ChessPosition(currentRow - 1, currentCol - 1);
+            ChessPosition downRight = new ChessPosition(currentRow - 1, currentCol + 1);
+            if (myBoard.getPiece(downLeft) != null && myBoard.getPiece(downLeft).pieceColor != this.pieceColor) {
+                potentialPositions.add(downLeft);
+            }
+            if (myBoard.getPiece(downRight) != null && myBoard.getPiece(downRight).pieceColor != this.pieceColor) {
+                potentialPositions.add(downRight);
+            }
+        }
+
+        for (ChessPosition pos: potentialPositions) {
+            // Remove out of bounds positions
+            if (pos.getRow() < 1 || pos.getRow() > 8 || pos.getColumn() < 1 || pos.getColumn() > 8) {
+                continue;
+            }
+            // Check if any piece is in the way
+            if (myBoard.getPiece(pos) != null && myBoard.getPiece(pos).pieceColor == this.pieceColor) {
+                continue;
+            }
+            else{
+                // Check if pawn will move into enemy row. If so, you can do 4 additional moves
+                if ((currentPos.getRow() == 7 && pos.getRow() == 8) || (currentPos.getRow() == 2 && pos.getRow() == 1)) {
+                    if (myBoard.getPiece(pos) != null && myBoard.getPiece(pos).pieceColor == ChessGame.TeamColor.WHITE) {
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
+                    }
+                    else if (myBoard.getPiece(pos) != null && myBoard.getPiece(pos).pieceColor == ChessGame.TeamColor.BLACK) {
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
+                    }
+                    else if (myBoard.getPiece(pos) == null) {
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
+                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
+                    }
+                }
+                else{
+                    potentialMoves.add(new ChessMove(currentPos, pos, null));
+                }
             }
         }
 

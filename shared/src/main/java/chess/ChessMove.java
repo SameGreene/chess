@@ -39,16 +39,32 @@ public class ChessMove {
      * @return Type of piece to promote a pawn to, or null if no promotion
      */
     public ChessPiece.PieceType getPromotionPiece() {
-        throw new RuntimeException("Not implemented");
+        return this.promotionPiece;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-
-        hash += startPosition.getColumn() + startPosition.getRow();
-        hash += endPostion.getColumn() + endPostion.getRow();
-
+        hash = startPosition.getRow() * 157 + startPosition.getColumn();
+        hash += endPostion.getRow() * 31 + endPostion.getColumn();
+        if(promotionPiece != null){
+            switch (promotionPiece){
+                case QUEEN:
+                    hash += 11;
+                    break;
+                case BISHOP:
+                    hash += 17;
+                    break;
+                case KNIGHT:
+                    hash += 23;
+                    break;
+                case ROOK:
+                    hash += 29;
+                    break;
+                default:
+                    hash += 1;
+            }
+        }
         return hash;
     }
 
