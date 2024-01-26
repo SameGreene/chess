@@ -489,24 +489,10 @@ public class ChessPiece {
             else{
                 // Check if pawn will move into enemy row. If so, you can do 4 additional moves
                 if ((currentPos.getRow() == 7 && pos.getRow() == 8) || (currentPos.getRow() == 2 && pos.getRow() == 1)) {
-                    if (myBoard.getPiece(pos) != null && myBoard.getPiece(pos).pieceColor == ChessGame.TeamColor.WHITE) {
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
-                    }
-                    else if (myBoard.getPiece(pos) != null && myBoard.getPiece(pos).pieceColor == ChessGame.TeamColor.BLACK) {
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
-                    }
-                    else if (myBoard.getPiece(pos) == null) {
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
-                        potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
-                    }
+                    potentialMoves.add(new ChessMove(currentPos, pos, PieceType.QUEEN));
+                    potentialMoves.add(new ChessMove(currentPos, pos, PieceType.BISHOP));
+                    potentialMoves.add(new ChessMove(currentPos, pos, PieceType.KNIGHT));
+                    potentialMoves.add(new ChessMove(currentPos, pos, PieceType.ROOK));
                 }
                 else{
                     potentialMoves.add(new ChessMove(currentPos, pos, null));
