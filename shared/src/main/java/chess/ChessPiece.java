@@ -430,7 +430,6 @@ public class ChessPiece {
 
         // If pawn is in start position, it can move 2 squares
         // If pawn moves into opposing team's back line, it can receive a promotion
-        // TODO: EN PASSANT
 
         // White team
         if (myBoard.getPiece(currentPos).pieceColor == ChessGame.TeamColor.WHITE) {
