@@ -116,9 +116,10 @@ public class ChessPiece implements Cloneable{
                 continue;
             }
             else{
-                // Check if pos isn't in enemy king's bubble. Add if that case is meant
+                // Check if pos isn't in enemy king's bubble. If it is, continue
                 // Column sweeps
                 for (int i = pos.getRow() - 2; i < pos.getRow() + 2; i++) {
+                    // 2 left column
                     ChessPosition checkPos = new ChessPosition(i, pos.getColumn() - 2);
                     // Make sure checkPos is in bounds
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
@@ -127,26 +128,60 @@ public class ChessPiece implements Cloneable{
                     if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
                         potentialMoves.add(new ChessMove(currentPos, pos, null));
                     }
+                    // 1 left column
+                    checkPos = new ChessPosition(i, pos.getColumn() - 1);
+                    // Make sure checkPos is in bounds
+                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
+                        continue;
+                    }
+                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
+                        potentialMoves.add(new ChessMove(currentPos, pos, null));
+                    }
+                    // 1 right column
+                    checkPos = new ChessPosition(i, pos.getColumn() + 1);
+                    // Make sure checkPos is in bounds
+                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
+                        continue;
+                    }
+                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
+                        potentialMoves.add(new ChessMove(currentPos, pos, null));
+                    }
+                    // 2 right column
                     checkPos = new ChessPosition(i, pos.getColumn() + 2);
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
                     if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING){
                         potentialMoves.add(new ChessMove(currentPos, pos, null));
                     }
                 }
                 // Row sweeps
                 for (int j = pos.getColumn() - 2; j < pos.getColumn() + 2; j++) {
-                    ChessPosition checkPos = new ChessPosition(pos.getRow() - 2, j);
+                    // 2 up row
+                    ChessPosition checkPos = new ChessPosition(pos.getRow() + 2, j);
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
                     if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
                         potentialMoves.add(new ChessMove(currentPos, pos, null));
                     }
+                    // 1 up row
+                    checkPos = new ChessPosition(pos.getRow() + 1, j);
+                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
+                        continue;
+                    }
+                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
+                        potentialMoves.add(new ChessMove(currentPos, pos, null));
+                    }
+                    // 1 down row
+                    checkPos = new ChessPosition(pos.getRow() - 1, j);
+                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
+                        continue;
+                    }
+                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
+                        potentialMoves.add(new ChessMove(currentPos, pos, null));
+                    }
+                    // 2 down row
                     checkPos = new ChessPosition(pos.getRow() - 2, j);
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
