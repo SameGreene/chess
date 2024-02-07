@@ -9,7 +9,7 @@ import java.util.Objects;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessGame {
+public class ChessGame implements Cloneable{
 
     private ChessBoard chessBoard;
     private TeamColor currentTurn;
@@ -85,17 +85,38 @@ public class ChessGame {
             // Are we in check?
             if (isInCheck(getTeamTurn())) {
                 // Will this move take us out of check?
-                if (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn) {
+                if (this.chessBoard.getPiece(endPos) == null || (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn)) {
                     // Create alternate universe game to see if move will take us out of check
-                    ChessGame altGame = this;
+                    ChessGame altGame = this.clone();
                     altGame.chessBoard.addPiece(endPos, currPiece);
                     altGame.chessBoard.addPiece(startPos, null);
                     if (altGame.isInCheck(getTeamTurn())) {
-                        throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
+                        throw new InvalidMoveException("ERROR: STILL IN CHECK");
                     }
                 }
                 else{
                     throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
+                }
+            }
+            if (!(isInCheck(getTeamTurn()))) {
+                // Alternate board to see if the move will put us in check
+                ChessGame altGame = this.clone();
+                altGame.chessBoard.addPiece(endPos, currPiece);
+                altGame.chessBoard.addPiece(startPos, null);
+                if (altGame.isInCheck(getTeamTurn())){
+                    throw new InvalidMoveException("ERROR: MOVE WILL PUT YOU INTO CHECK");
+                }
+                else {
+                    // Is the current piece a promoting pawn?
+                    if (promoPiece != null) {
+                        ChessPiece promotedPiece = new ChessPiece(currentTurn, promoPiece);
+                        this.chessBoard.addPiece(endPos, promotedPiece);
+                        this.chessBoard.addPiece(startPos, null);
+                    }
+                    else {
+                        this.chessBoard.addPiece(endPos, currPiece);
+                        this.chessBoard.addPiece(startPos, null);
+                    }
                 }
             }
             // Nothing is stopping the move. Let it happen!
@@ -204,5 +225,16 @@ public class ChessGame {
                 "chessBoard=" + chessBoard +
                 ", currentTurn=" + currentTurn +
                 '}';
+    }
+
+    @Override
+    public ChessGame clone() {
+        try {
+            ChessGame clone = (ChessGame) super.clone();
+            clone.chessBoard = this.chessBoard.clone();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new InternalError(e);
+        }
     }
 }
