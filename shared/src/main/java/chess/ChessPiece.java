@@ -434,45 +434,57 @@ public class ChessPiece {
         // White team
         if (myBoard.getPiece(currentPos).pieceColor == ChessGame.TeamColor.WHITE) {
             // Look up once
-            ChessPosition above = new ChessPosition(currentRow + 1, currentCol);
-            if(myBoard.getPiece(above) == null){
-                potentialPositions.add(above);
-                ChessPosition twoAbove = new ChessPosition(currentRow + 2, currentCol);
-                if (currentRow == 2 && myBoard.getPiece(twoAbove) == null) {
-                    // Look up twice if once is safe
-                    potentialPositions.add(twoAbove);
+            if (currentRow < 8) {
+                ChessPosition above = new ChessPosition(currentRow + 1, currentCol);
+                if (myBoard.getPiece(above) == null) {
+                    potentialPositions.add(above);
+                    ChessPosition twoAbove = new ChessPosition(currentRow + 2, currentCol);
+                    if (currentRow == 2 && myBoard.getPiece(twoAbove) == null) {
+                        // Look up twice if once is safe
+                        potentialPositions.add(twoAbove);
+                    }
                 }
             }
             // Look at diagonals. Check that the piece there is an enemy
-            ChessPosition upLeft = new ChessPosition(currentRow + 1, currentCol - 1);
-            ChessPosition upRight = new ChessPosition(currentRow + 1, currentCol + 1);
-            if (myBoard.getPiece(upLeft) != null && myBoard.getPiece(upLeft).pieceColor != this.pieceColor) {
-                potentialPositions.add(upLeft);
+            if (currentRow < 8 && currentCol > 1){
+                ChessPosition upLeft = new ChessPosition(currentRow + 1, currentCol - 1);
+                if (myBoard.getPiece(upLeft) != null && myBoard.getPiece(upLeft).pieceColor != this.pieceColor) {
+                    potentialPositions.add(upLeft);
+                }
             }
-            if (myBoard.getPiece(upRight) != null && myBoard.getPiece(upRight).pieceColor != this.pieceColor) {
-                potentialPositions.add(upRight);
+            if (currentRow < 8 && currentCol < 8) {
+                ChessPosition upRight = new ChessPosition(currentRow + 1, currentCol + 1);
+                if (myBoard.getPiece(upRight) != null && myBoard.getPiece(upRight).pieceColor != this.pieceColor) {
+                    potentialPositions.add(upRight);
+                }
             }
         }
         // Black team
         else if (myBoard.getPiece(currentPos).pieceColor == ChessGame.TeamColor.BLACK) {
             // Look down once
-            ChessPosition below = new ChessPosition(currentRow - 1, currentCol);
-            if(myBoard.getPiece(below) == null){
-                potentialPositions.add(below);
-                ChessPosition twoBelow = new ChessPosition(currentRow - 2, currentCol);
-                if (currentRow == 7 && myBoard.getPiece(twoBelow) == null) {
-                    // Look down twice if once is safe
-                    potentialPositions.add(twoBelow);
+            if (currentRow > 1) {
+                ChessPosition below = new ChessPosition(currentRow - 1, currentCol);
+                if (myBoard.getPiece(below) == null) {
+                    potentialPositions.add(below);
+                    ChessPosition twoBelow = new ChessPosition(currentRow - 2, currentCol);
+                    if (currentRow == 7 && myBoard.getPiece(twoBelow) == null) {
+                        // Look down twice if once is safe
+                        potentialPositions.add(twoBelow);
+                    }
                 }
             }
             // Look at diagonals. Check that the piece there is an enemy
-            ChessPosition downLeft = new ChessPosition(currentRow - 1, currentCol - 1);
-            ChessPosition downRight = new ChessPosition(currentRow - 1, currentCol + 1);
-            if (myBoard.getPiece(downLeft) != null && myBoard.getPiece(downLeft).pieceColor != this.pieceColor) {
-                potentialPositions.add(downLeft);
+            if (currentRow > 1 && currentCol > 1) {
+                ChessPosition downLeft = new ChessPosition(currentRow - 1, currentCol - 1);
+                if (myBoard.getPiece(downLeft) != null && myBoard.getPiece(downLeft).pieceColor != this.pieceColor) {
+                    potentialPositions.add(downLeft);
+                }
             }
-            if (myBoard.getPiece(downRight) != null && myBoard.getPiece(downRight).pieceColor != this.pieceColor) {
-                potentialPositions.add(downRight);
+            if (currentRow > 1 && currentCol < 8) {
+                ChessPosition downRight = new ChessPosition(currentRow - 1, currentCol + 1);
+                if (myBoard.getPiece(downRight) != null && myBoard.getPiece(downRight).pieceColor != this.pieceColor) {
+                    potentialPositions.add(downRight);
+                }
             }
         }
 
