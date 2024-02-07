@@ -75,7 +75,7 @@ public class ChessGame {
         // Check that it's the piece's turn
         if(currPiece.getTeamColor() == getTeamTurn()) {
             Collection<ChessMove> valMoves = validMoves(startPos);
-            // Is move valid?
+            // Is the move valid?
             if (valMoves == null) {
                 throw new InvalidMoveException("ERROR: NO VALID MOVES EXIST");
             }
@@ -100,8 +100,16 @@ public class ChessGame {
             }
             // Nothing is stopping the move. Let it happen!
             else {
-                this.chessBoard.addPiece(endPos, currPiece);
-                this.chessBoard.addPiece(startPos, null);
+                // Is the current piece a promoting pawn?
+                if (promoPiece != null) {
+                    ChessPiece promotedPiece = new ChessPiece(currentTurn, promoPiece);
+                    this.chessBoard.addPiece(endPos, promotedPiece);
+                    this.chessBoard.addPiece(startPos, null);
+                }
+                else {
+                    this.chessBoard.addPiece(endPos, currPiece);
+                    this.chessBoard.addPiece(startPos, null);
+                }
             }
         }
         else{
