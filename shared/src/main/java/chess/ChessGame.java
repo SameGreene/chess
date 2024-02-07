@@ -82,19 +82,27 @@ public class ChessGame {
             else if (!(valMoves.contains(move))) {
                 throw new InvalidMoveException("ERROR: INVALID MOVE");
             }
-            if (this.chessBoard.getPiece(endPos) == null){
+            // Are we in check?
+            if (isInCheck(getTeamTurn())) {
+                // Will this move take us out of check?
+                if (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn) {
+                    // Create alternate universe game to see if move will take us out of check
+                    ChessGame altGame = this;
+                    altGame.chessBoard.addPiece(endPos, currPiece);
+                    altGame.chessBoard.addPiece(startPos, null);
+                    if (altGame.isInCheck(getTeamTurn())) {
+                        throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
+                    }
+                }
+                else{
+                    throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
+                }
+            }
+            // Nothing is stopping the move. Let it happen!
+            else {
                 this.chessBoard.addPiece(endPos, currPiece);
                 this.chessBoard.addPiece(startPos, null);
             }
-            // Will this move take us out of check?
-            if (this.chessBoard.getPiece(endPos) != null && ) {
-                if (isInCheck(getTeamTurn())) {
-
-//                throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
-                }
-            }
-
-            // Nothing is stopping the move. Let it happen!
         }
         else{
             throw new InvalidMoveException("ERROR: WRONG TURN");
