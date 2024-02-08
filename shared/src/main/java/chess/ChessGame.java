@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -51,11 +52,34 @@ public class ChessGame implements Cloneable {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece currPiece = chessBoard.getPiece(startPosition);
+        Collection<ChessMove> pieceMoves = new HashSet<>();
+        Collection<ChessMove> valMoves = new HashSet<>();
+
         if (currPiece.pieceMoves(chessBoard, startPosition).isEmpty()) {
             return null;
         } else {
-            return currPiece.pieceMoves(chessBoard, startPosition);
+            pieceMoves = currPiece.pieceMoves(chessBoard, startPosition);
         }
+
+        for (ChessMove move : pieceMoves) {
+            // Will this move put us into check?
+            ChessPosition endPos = move.getEndPosition();
+            ChessPosition startPos = move.getStartPosition();
+
+            if (this.chessBoard.getPiece(endPos) == null || (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn)) {
+                // Create alternate universe game to see if move will put us into check
+                ChessGame altGame = this.clone();
+                altGame.chessBoard.addPiece(endPos, currPiece);
+                altGame.chessBoard.addPiece(startPos, null);
+
+                // If move puts us into check, remove it from the moves
+                if (!altGame.isInCheck(currPiece.getTeamColor())) {
+                    valMoves.add(move);
+                }
+            }
+        }
+
+        return valMoves;
     }
 
     /**
@@ -95,12 +119,21 @@ public class ChessGame implements Cloneable {
                     altGame.chessBoard.addPiece(startPos, null);
                     if (altGame.isInCheck(getTeamTurn())) {
                         throw new InvalidMoveException("ERROR: STILL IN CHECK");
+                    } else {
+                        // Is the current piece a promoting pawn?
+                        if (promoPiece != null) {
+                            ChessPiece promotedPiece = new ChessPiece(currentTurn, promoPiece);
+                            this.chessBoard.addPiece(endPos, promotedPiece);
+                            this.chessBoard.addPiece(startPos, null);
+                        } else {
+                            this.chessBoard.addPiece(endPos, currPiece);
+                            this.chessBoard.addPiece(startPos, null);
+                        }
                     }
                 } else {
                     throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
                 }
-            }
-            else {
+            } else {
                 // Alternate board to see if the move will put us in check
                 ChessGame altGame = this.clone();
                 altGame.chessBoard.addPiece(endPos, currPiece);
@@ -120,8 +153,7 @@ public class ChessGame implements Cloneable {
                 }
             }
 
-        }
-        else {
+        } else {
             throw new InvalidMoveException("ERROR: WRONG TURN");
         }
         // Change turn to the other team
@@ -136,15 +168,17 @@ public class ChessGame implements Cloneable {
      */
     public boolean isInCheck(TeamColor teamColor) {
         TeamColor attackingTeam = teamColor == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
-
         boolean inCheck = false;
+
         outermostLoop:
-        for (int i = 1; i < 8; i++) {
-            for (int j = 1; j < 8; j++) {
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
                 ChessPosition attackingPosition = new ChessPosition(i, j);
                 ChessPiece attackingPiece = this.chessBoard.getPiece(attackingPosition);
+
                 if (attackingPiece != null && attackingPiece.getTeamColor() == attackingTeam) {
                     Collection<ChessMove> attackingMoves = attackingPiece.pieceMoves(this.chessBoard, attackingPosition);
+
                     for (ChessMove move : attackingMoves) {
                         // Is the attacking piece going to hit the king?
                         if (this.chessBoard.getPiece(move.getEndPosition()) != null && this.chessBoard.getPiece(move.getEndPosition()).getPieceType() == ChessPiece.PieceType.KING && this.chessBoard.getPiece(move.getEndPosition()).getTeamColor() != attackingTeam) {
@@ -167,36 +201,35 @@ public class ChessGame implements Cloneable {
     public boolean isInCheckmate(TeamColor teamColor) {
         // Let's assume we're not in checkmate and then prove that we are
         boolean inCheckmate = false;
-        if (isInCheck(currentTurn)) {
-            // Try to move all friendly team pieces. If any of them take us out of check, keep inCheckmate as false. Otherwise, make it true
-            outermostLoop:
-            for (int i = 1; i < 8; i++) {
-                for (int j = 1; j < 8; j++) {
-                    ChessPosition friendlyPosition = new ChessPosition(i, j);
-                    ChessPiece friendlyPiece = this.chessBoard.getPiece(friendlyPosition);
-                    if (friendlyPiece != null && friendlyPiece.getTeamColor() == teamColor) {
-                        // Try to move.
-                        Collection<ChessMove> friendlyMoves = friendlyPiece.pieceMoves(this.chessBoard, friendlyPosition);
-                        for (ChessMove move : friendlyMoves) {
-                            // Will this move take us out of check?
-                            ChessPosition endPos = move.getEndPosition();
-                            ChessPosition startPos = move.getStartPosition();
-                            if (this.chessBoard.getPiece(endPos) == null || (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn)) {
-                                // Create alternate universe game to see if move will take us out of check
-                                ChessGame altGame = this.clone();
-                                altGame.chessBoard.addPiece(endPos, friendlyPiece);
-                                altGame.chessBoard.addPiece(startPos, null);
-                                if (friendlyPiece.getPieceType() == ChessPiece.PieceType.KING )
-                                // If all moves keep us in check, we're in checkmate
-                                if (!(altGame.isInCheck(getTeamTurn()))) {
-                                    inCheckmate = false;
-                                    break outermostLoop;
-                                }
-                                else {
-                                    inCheckmate = true;
-                                }
-                            }
-                        }
+
+        if (!isInCheck(currentTurn)) return false;
+
+        // Try to move all friendly team pieces. If any of them take us out of check, keep inCheckmate as false. Otherwise, make it true
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition friendlyPosition = new ChessPosition(i, j);
+                ChessPiece friendlyPiece = this.chessBoard.getPiece(friendlyPosition);
+
+                if (friendlyPiece == null || friendlyPiece.getTeamColor() != teamColor) continue;
+
+                // Try to move.
+                Collection<ChessMove> friendlyMoves = friendlyPiece.pieceMoves(this.chessBoard, friendlyPosition);
+
+                for (ChessMove move : friendlyMoves) {
+                    // Will this move take us out of check?
+                    ChessPosition endPos = move.getEndPosition();
+                    ChessPosition startPos = move.getStartPosition();
+
+                    // Create alternate universe game to see if move will take us out of check
+                    ChessGame altGame = this.clone();
+                    altGame.chessBoard.addPiece(endPos, friendlyPiece);
+                    altGame.chessBoard.addPiece(startPos, null);
+
+                    // If all moves keep us in check, we're in checkmate
+                    if (!altGame.isInCheck(teamColor)) {
+                        return false;
+                    } else {
+                        inCheckmate = true;
                     }
                 }
             }
@@ -213,7 +246,40 @@ public class ChessGame implements Cloneable {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        boolean inStalemate = true;
+
+        for (int i = 1; i < 9; i++) {
+            for (int j = 1; j < 9; j++) {
+                ChessPosition friendlyPosition = new ChessPosition(i, j);
+                ChessPiece friendlyPiece = this.chessBoard.getPiece(friendlyPosition);
+
+                if (friendlyPiece != null && friendlyPiece.getTeamColor() == teamColor) {
+                    // Can this piece move at all? If it can, we are not in a stalemate - break to outermostLoop
+                    Collection<ChessMove> friendlyMoves = friendlyPiece.pieceMoves(this.chessBoard, friendlyPosition);
+                    for (ChessMove move : friendlyMoves) {
+                        // Will this move put us into check?
+                        ChessPosition endPos = move.getEndPosition();
+                        ChessPosition startPos = move.getStartPosition();
+
+                        if (this.chessBoard.getPiece(endPos) == null || (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn)) {
+                            // Create alternate universe game to see if move will put us into check
+                            ChessGame altGame = this.clone();
+                            altGame.chessBoard.addPiece(endPos, friendlyPiece);
+                            altGame.chessBoard.addPiece(startPos, null);
+
+                            // If all moves keep us in check, we're in checkmate
+                            if (altGame.isInCheck(teamColor)) {
+                                inStalemate = true;
+                            } else {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return inStalemate;
     }
 
     /**
