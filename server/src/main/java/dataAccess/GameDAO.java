@@ -32,4 +32,8 @@ public class GameDAO {
     public void updateGame(int gameID){
 
     }
+
+    public void clearGameList(){
+        gameList.clear();
+    }
 }

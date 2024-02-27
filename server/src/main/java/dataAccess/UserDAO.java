@@ -21,4 +21,8 @@ public class UserDAO {
 
         return retUser;
     }
+
+    public void clearUserList(){
+        userList.clear();
+    }
 }

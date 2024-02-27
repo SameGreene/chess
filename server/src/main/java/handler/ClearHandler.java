@@ -12,6 +12,6 @@ public class ClearHandler {
     public Object handle(Request request, Response response, UserDAO userObj, AuthDAO authObj, GameDAO gameObj){
         Gson myGson = new Gson();
         DBService myDBService = new DBService();
-        return myGson.toJson(myDBService.respond(userObj, authObj, gameObj));
+        return myGson.toJson(myDBService.clearRespond(userObj, authObj, gameObj));
     }
 }
