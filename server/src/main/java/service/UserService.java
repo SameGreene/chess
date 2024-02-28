@@ -68,6 +68,7 @@ public class UserService {
     public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) {
         for (int i = 0; i < authObj.authList.size(); i = i + 1) {
             if (authToken.equals(authObj.authList.get(i).authToken())) {
+                authObj.authList.remove(i);
                 return new LogoutResponse(null, 200);
             }
         }
