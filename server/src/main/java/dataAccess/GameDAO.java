@@ -8,7 +8,7 @@ import java.util.List;
 public class GameDAO {
 
     public List<GameData> gameList = new ArrayList<>();
-    public int currentID = 0;
+    public int currentID = 1;
     public void createGame(GameData newGame){
         gameList.add(newGame);
     }
@@ -23,10 +23,6 @@ public class GameDAO {
         }
 
         return retGame;
-    }
-
-    public void updateGame(int gameID){
-
     }
 
     public void clearGameList(){
