@@ -10,18 +10,6 @@ public class UserDAO {
         userList.add(newUser);
     }
 
-    public UserData getUser(String username){
-        UserData retUser = null;
-
-        for (int i = 0; i < userList.size(); i = i + 1){
-            if(userList.get(i).username() == username){
-                retUser = userList.get(i);
-            }
-        }
-
-        return retUser;
-    }
-
     public void clearUserList(){
         userList.clear();
     }
