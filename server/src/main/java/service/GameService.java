@@ -33,7 +33,7 @@ public class GameService {
         boolean authenticated = false;
 
         if (req.getGameName() == null) {
-            return new CreateGameResponse(0, "ERROR - Bad Request", 400);
+            return new CreateGameResponse(null, "ERROR - Bad Request", 400);
         }
         // Check for authentication
         for (int i = 0; i < authObj.authList.size(); i = i + 1) {
@@ -50,7 +50,7 @@ public class GameService {
             gameObj.gameList.add(gameDataToAdd);
             return new CreateGameResponse(newGameID, null, 200);
         } else {
-            return new CreateGameResponse(0, "ERROR - Unauthorized", 401);
+            return new CreateGameResponse(null, "ERROR - Unauthorized", 401);
         }
     }
 
