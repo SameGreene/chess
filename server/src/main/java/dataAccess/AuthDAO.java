@@ -1,7 +1,6 @@
 package dataAccess;
 
 import model.AuthData;
-import model.UserData;
 
 import java.util.ArrayList;
 import java.util.List;

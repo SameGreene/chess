@@ -3,10 +3,7 @@ package server;
 import dataAccess.AuthDAO;
 import dataAccess.GameDAO;
 import dataAccess.UserDAO;
-import handler.ClearHandler;
-import handler.LoginHandler;
-import handler.LogoutHandler;
-import handler.RegisterHandler;
+import handler.*;
 import spark.*;
 
 public class Server {
@@ -30,8 +27,8 @@ public class Server {
         Spark.post("/user", ((request, response) -> new RegisterHandler().handle(request, response, userObj, authObj)));
         Spark.post("/session", ((request, response) -> new LoginHandler().handle(request, response, userObj, authObj)));
         Spark.delete("/session", ((request, response) -> new LogoutHandler().handle(request, response, authObj)));
-//        Spark.get("/game", ((request, response) -> new ListGamesHandler().handle(request, response, authObj, gameObj)));
-//        Spark.post("/game", ((request, response) -> new CreateGameHandler().handle(request, response, authObj, gameObj)));
+        Spark.get("/game", ((request, response) -> new ListGamesHandler().handle(request, response, authObj, gameObj)));
+        Spark.post("/game", ((request, response) -> new CreateGameHandler().handle(request, response, authObj, gameObj)));
 //        Spark.put("/game", ((request, response) -> new JoinGameHandler().handle(request, response, authObj, gameObj)));
 
         Spark.awaitInitialization();

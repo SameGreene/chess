@@ -1,14 +1,14 @@
 package dataAccess;
 
+import chess.ChessGame;
 import model.GameData;
-import model.UserData;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameDAO {
 
     public List<GameData> gameList = new ArrayList<>();
+    public int currentID = 0;
     public void createGame(GameData newGame){
         gameList.add(newGame);
     }
@@ -23,10 +23,6 @@ public class GameDAO {
         }
 
         return retGame;
-    }
-
-    public void listGames(){
-
     }
 
     public void updateGame(int gameID){
