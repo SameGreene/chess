@@ -96,83 +96,48 @@ public class ChessPiece implements Cloneable{
                     // 2 left column
                     ChessPosition checkPos = new ChessPosition(i, pos.getColumn() - 2);
                     // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                     // 1 left column
                     checkPos = new ChessPosition(i, pos.getColumn() - 1);
                     // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                     // 1 right column
                     checkPos = new ChessPosition(i, pos.getColumn() + 1);
                     // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                     // 2 right column
                     checkPos = new ChessPosition(i, pos.getColumn() + 2);
-                    // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                 }
                 // Row sweeps
                 for (int j = pos.getColumn() - 2; j < pos.getColumn() + 2; j++) {
                     // 2 up row
                     ChessPosition checkPos = new ChessPosition(pos.getRow() + 2, j);
-                    // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                     // 1 up row
                     checkPos = new ChessPosition(pos.getRow() + 1, j);
-                    // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                     // 1 down row
                     checkPos = new ChessPosition(pos.getRow() - 1, j);
-                    // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                     // 2 down row
                     checkPos = new ChessPosition(pos.getRow() - 2, j);
-                    // Make sure checkPos is in bounds
-                    if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
-                        continue;
-                    }
-                    if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
-                        potentialMoves.add(new ChessMove(currentPos, pos, null));
-                    }
+                    if (outOfRange(myBoard, currentPos, potentialMoves, pos, checkPos)) continue;
                 }
             }
         }
 
         return potentialMoves;
+    }
+
+    public boolean outOfRange(ChessBoard myBoard, ChessPosition currentPos, Collection<ChessMove> potentialMoves, ChessPosition pos, ChessPosition checkPos) {
+        if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
+            return true;
+        }
+        if (myBoard.getPiece(checkPos) == null || (myBoard.getPiece(checkPos) != null && myBoard.getPiece(checkPos).pieceType != PieceType.KING)){
+            potentialMoves.add(new ChessMove(currentPos, pos, null));
+        }
+        return false;
     }
 
     private Collection<ChessMove> queenMoves(ChessBoard myBoard, ChessPosition currentPos) {
