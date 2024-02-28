@@ -120,15 +120,7 @@ public class ChessGame implements Cloneable {
                     if (altGame.isInCheck(getTeamTurn())) {
                         throw new InvalidMoveException("ERROR: STILL IN CHECK");
                     } else {
-                        // Is the current piece a promoting pawn?
-                        if (promoPiece != null) {
-                            ChessPiece promotedPiece = new ChessPiece(currentTurn, promoPiece);
-                            this.chessBoard.addPiece(endPos, promotedPiece);
-                            this.chessBoard.addPiece(startPos, null);
-                        } else {
-                            this.chessBoard.addPiece(endPos, currPiece);
-                            this.chessBoard.addPiece(startPos, null);
-                        }
+                        isPromotingPawn(currPiece, promoPiece, startPos, endPos);
                     }
                 } else {
                     throw new InvalidMoveException("ERROR: CURRENTLY IN CHECK");
@@ -141,15 +133,7 @@ public class ChessGame implements Cloneable {
                 if (altGame.isInCheck(getTeamTurn())) {
                     throw new InvalidMoveException("ERROR: MOVE WILL PUT YOU INTO CHECK");
                 } else {
-                    // Is the current piece a promoting pawn?
-                    if (promoPiece != null) {
-                        ChessPiece promotedPiece = new ChessPiece(currentTurn, promoPiece);
-                        this.chessBoard.addPiece(endPos, promotedPiece);
-                        this.chessBoard.addPiece(startPos, null);
-                    } else {
-                        this.chessBoard.addPiece(endPos, currPiece);
-                        this.chessBoard.addPiece(startPos, null);
-                    }
+                    isPromotingPawn(currPiece, promoPiece, startPos, endPos);
                 }
             }
 
@@ -158,6 +142,18 @@ public class ChessGame implements Cloneable {
         }
         // Change turn to the other team
         currentTurn = currPiece.getTeamColor() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+    }
+
+    // Promoting Pawn Helper
+    public void isPromotingPawn(ChessPiece currPiece, ChessPiece.PieceType promoPiece, ChessPosition startPos, ChessPosition endPos){
+        if (promoPiece != null) {
+            ChessPiece promotedPiece = new ChessPiece(currentTurn, promoPiece);
+            this.chessBoard.addPiece(endPos, promotedPiece);
+            this.chessBoard.addPiece(startPos, null);
+        } else {
+            this.chessBoard.addPiece(endPos, currPiece);
+            this.chessBoard.addPiece(startPos, null);
+        }
     }
 
     /**
