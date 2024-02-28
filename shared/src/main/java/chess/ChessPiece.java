@@ -122,6 +122,7 @@ public class ChessPiece implements Cloneable{
                     }
                     // 2 right column
                     checkPos = new ChessPosition(i, pos.getColumn() + 2);
+                    // Make sure checkPos is in bounds
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
@@ -133,6 +134,7 @@ public class ChessPiece implements Cloneable{
                 for (int j = pos.getColumn() - 2; j < pos.getColumn() + 2; j++) {
                     // 2 up row
                     ChessPosition checkPos = new ChessPosition(pos.getRow() + 2, j);
+                    // Make sure checkPos is in bounds
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
@@ -141,6 +143,7 @@ public class ChessPiece implements Cloneable{
                     }
                     // 1 up row
                     checkPos = new ChessPosition(pos.getRow() + 1, j);
+                    // Make sure checkPos is in bounds
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
@@ -149,6 +152,7 @@ public class ChessPiece implements Cloneable{
                     }
                     // 1 down row
                     checkPos = new ChessPosition(pos.getRow() - 1, j);
+                    // Make sure checkPos is in bounds
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
@@ -157,6 +161,7 @@ public class ChessPiece implements Cloneable{
                     }
                     // 2 down row
                     checkPos = new ChessPosition(pos.getRow() - 2, j);
+                    // Make sure checkPos is in bounds
                     if (checkPos.getRow() < 1 || checkPos.getRow() > 8 || checkPos.getColumn() < 1 || checkPos.getColumn() > 8) {
                         continue;
                     }
@@ -460,8 +465,6 @@ public class ChessPiece implements Cloneable{
 
         return ob;
     }
-
-    // OVERRIDES
 
     @Override
     public boolean equals(Object o) {
