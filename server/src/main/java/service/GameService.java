@@ -75,7 +75,7 @@ public class GameService {
             for (int i = 0; i < gameObj.gameList.size(); i = i + 1) {
                 // Does the game exist?
                 if (gameObj.gameList.get(i).gameID() == req.getGameID()) {
-                    if (req.playerColor.equals(null)) {
+                    if (req.getPlayerColor() == null) {
                         // TODO - Joins as observer
                         return new JoinGameResponse(null, 200);
                     } else {
