@@ -25,10 +25,6 @@ public class AuthDAO {
         return retAuth;
     }
 
-    public void deleteAuth(String authToken){
-
-    }
-
     public void clearAuthList(){
         authList.clear();
     }

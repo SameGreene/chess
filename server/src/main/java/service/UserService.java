@@ -52,25 +52,22 @@ public class UserService {
         String authToken = "";
 
         for (int i = 0; i < userObj.userList.size(); i = i + 1) {
-            if (userObj.userList.get(i).username().equals(req.getUsername())) {
-                if(req.password.equals(userObj.userList.get(i).password())){
-                    authToken = UUID.randomUUID().toString();
-                    authObj.authList.set(i, new AuthData(username, authToken));
-                    return new LoginResponse(username, authToken, "", 200);
-                }
-                else{
-                    return new LoginResponse(null, null, "ERROR - Unauthorized", 401);
-                }
+            if (userObj.userList.get(i).username().equals(req.getUsername()) && req.password.equals(userObj.userList.get(i).password())) {
+                authToken = UUID.randomUUID().toString();
+                authObj.authList.add(new AuthData(authToken, username));
+                return new LoginResponse(username, authToken, "", 200);
+            }
+            else {
+                return new LoginResponse(null, null, "ERROR - Unauthorized", 401);
             }
         }
 
         return new LoginResponse(null, null, "ERROR - User does not exist", 401);
     }
 
-    public LogoutResponse logoutRespond(String authToken, AuthDAO authObj){
-        for (int i = 0; i < authObj.authList.size(); i = i + 1){
-            if(authToken.equals(authObj.authList.get(i).authToken())){
-                authObj.authList.remove(i);
+    public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) {
+        for (int i = 0; i < authObj.authList.size(); i = i + 1) {
+            if (authToken.equals(authObj.authList.get(i).authToken())) {
                 return new LogoutResponse(null, 200);
             }
         }
