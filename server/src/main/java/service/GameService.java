@@ -76,7 +76,7 @@ public class GameService {
                 // Does the game exist?
                 if (gameObj.gameList.get(i).gameID() == req.getGameID()) {
                     if (req.getPlayerColor() == null) {
-                        // TODO - Joins as observer
+                        // Joins as observer
                         return new JoinGameResponse(null, 200);
                     } else {
                         if (req.getPlayerColor() != null && req.getPlayerColor().equals("WHITE") && gameObj.gameList.get(i).whiteUsername() == null) {
