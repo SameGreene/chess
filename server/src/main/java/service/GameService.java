@@ -10,8 +10,6 @@ import response.CreateGameResponse;
 import response.ListGamesResponse;
 import response.JoinGameResponse;
 
-import java.util.Random;
-
 public class GameService {
     public ListGamesResponse listGamesRespond(String authToken, AuthDAO authObj, GameDAO gameObj) {
         boolean authenticated = false;
