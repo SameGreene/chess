@@ -14,8 +14,8 @@ public class GameService {
     public ListGamesResponse listGamesRespond(String authToken, AuthDAO authObj, GameDAO gameObj) {
         boolean authenticated = false;
         // Check for authentication
-        for (int i = 0; i < authObj.authList.size(); i = i + 1) {
-            if (authToken.equals(authObj.authList.get(i).authToken())) {
+        for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authToken.equals(authObj.getAuth(i).authToken())) {
                 authenticated = true;
                 break;
             }
@@ -34,8 +34,8 @@ public class GameService {
             return new CreateGameResponse(null, "ERROR - Bad Request", 400);
         }
         // Check for authentication
-        for (int i = 0; i < authObj.authList.size(); i = i + 1) {
-            if (authObj.authList.get(i).authToken().equals(authToken)) {
+        for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authObj.getAuth(i).authToken().equals(authToken)) {
                 authenticated = true;
                 break;
             }
@@ -60,8 +60,8 @@ public class GameService {
             return new JoinGameResponse("ERROR - Bad Request", 400);
         } else {
             // Check for authentication
-            for (int i = 0; i < authObj.authList.size(); i = i + 1) {
-                if (authObj.authList.get(i).authToken().equals(authToken)) {
+            for (int i = 0; i < authObj.getSize(); i = i + 1) {
+                if (authObj.getAuth(i).authToken().equals(authToken)) {
                     authenticated = true;
                     userNumber = i;
                     break;
@@ -78,12 +78,12 @@ public class GameService {
                         return new JoinGameResponse(null, 200);
                     } else {
                         if (req.getPlayerColor() != null && req.getPlayerColor().equals("WHITE") && gameObj.gameList.get(i).whiteUsername() == null) {
-                            String newWhite = authObj.authList.get(userNumber).username();
+                            String newWhite = authObj.getAuth(userNumber).username();
                             GameData gameToUpdate = new GameData(req.getGameID(), newWhite, gameObj.gameList.get(i).blackUsername(), gameObj.gameList.get(i).gameName(), gameObj.gameList.get(i).game());
                             gameObj.gameList.set(i, gameToUpdate);
                             return new JoinGameResponse("", 200);
                         } else if (req.getPlayerColor() != null && req.getPlayerColor().equals("BLACK") && gameObj.gameList.get(i).blackUsername() == null) {
-                            String newBlack = authObj.authList.get(userNumber).username();
+                            String newBlack = authObj.getAuth(userNumber).username();
                             GameData gameToUpdate = new GameData(req.getGameID(), gameObj.gameList.get(i).whiteUsername(), newBlack, gameObj.gameList.get(i).gameName(), gameObj.gameList.get(i).game());
                             gameObj.gameList.set(i, gameToUpdate);
                             return new JoinGameResponse("", 200);

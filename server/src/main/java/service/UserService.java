@@ -54,7 +54,7 @@ public class UserService {
         for (int i = 0; i < userObj.userList.size(); i = i + 1) {
             if (userObj.userList.get(i).username().equals(req.getUsername()) && req.password.equals(userObj.userList.get(i).password())) {
                 authToken = UUID.randomUUID().toString();
-                authObj.authList.add(new AuthData(authToken, username));
+                authObj.createAuth(new AuthData(authToken, username));
                 return new LoginResponse(username, authToken, "", 200);
             }
             else {
@@ -66,9 +66,9 @@ public class UserService {
     }
 
     public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) {
-        for (int i = 0; i < authObj.authList.size(); i = i + 1) {
-            if (authToken.equals(authObj.authList.get(i).authToken())) {
-                authObj.authList.remove(i);
+        for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authToken.equals(authObj.getAuth(i).authToken())) {
+                authObj.removeAuth(i);
                 return new LogoutResponse(null, 200);
             }
         }
