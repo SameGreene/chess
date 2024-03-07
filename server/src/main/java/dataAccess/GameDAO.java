@@ -1,16 +1,17 @@
 package dataAccess;
 
-import chess.ChessGame;
 import model.GameData;
-import java.util.ArrayList;
+
 import java.util.List;
 
-public class GameDAO {
+public interface GameDAO {
+    void createGame(GameData game);
+    int getCurrentID();
+    void removeGame(int index);
+    GameData getGame(int index);
+    void setGame(int index, GameData game);
+    int getSize();
+    void clearGameList();
+    List<GameData> returnGameList();
 
-    public List<GameData> gameList = new ArrayList<>();
-    public int currentID = 1;
-
-    public void clearGameList(){
-        gameList.clear();
-    }
 }

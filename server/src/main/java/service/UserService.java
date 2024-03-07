@@ -20,20 +20,16 @@ public class UserService {
         int status = 200;
 
         if (req.getUsername() == null || req.getPassword() == null || req.getEmail() == null) {
-            username = null;
-            authToken = null;
             message = "ERROR - Bad request";
             status = 400;
-            return new RegisterResponse(username, authToken, message, status);
+            return new RegisterResponse(null, null, message, status);
         }
 
-        for (int i = 0; i < userObj.userList.size(); i = i + 1) {
-            if (userObj.userList.get(i).username().equals(req.getUsername())) {
-                username = null;
-                authToken = null;
+        for (int i = 0; i < userObj.getSize(); i = i + 1) {
+            if (userObj.getUser(i).username().equals(req.getUsername())) {
                 message = "ERROR - User already exists";
                 status = 403;
-                return new RegisterResponse(username, authToken, message, status);
+                return new RegisterResponse(null, null, message, status);
             }
         }
 
@@ -51,8 +47,8 @@ public class UserService {
         String username = req.getUsername();
         String authToken = "";
 
-        for (int i = 0; i < userObj.userList.size(); i = i + 1) {
-            if (userObj.userList.get(i).username().equals(req.getUsername()) && req.password.equals(userObj.userList.get(i).password())) {
+        for (int i = 0; i < userObj.getSize(); i = i + 1) {
+            if (userObj.getUser(i).username().equals(req.getUsername()) && req.password.equals(userObj.getUser(i).password())) {
                 authToken = UUID.randomUUID().toString();
                 authObj.createAuth(new AuthData(authToken, username));
                 return new LoginResponse(username, authToken, "", 200);

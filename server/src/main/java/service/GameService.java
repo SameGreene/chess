@@ -21,7 +21,7 @@ public class GameService {
             }
         }
         if (authenticated) {
-            return new ListGamesResponse(gameObj.gameList, "", 200);
+            return new ListGamesResponse(gameObj.returnGameList(), "", 200);
         } else {
             return new ListGamesResponse(null, "ERROR - Unauthorized", 401);
         }
@@ -42,10 +42,9 @@ public class GameService {
         }
 
         if (authenticated) {
-            int newGameID = gameObj.currentID;
-            gameObj.currentID = gameObj.currentID + 1;
+            int newGameID = gameObj.getCurrentID();
             GameData gameDataToAdd = new GameData(newGameID, null, null, req.getGameName(), new ChessGame());
-            gameObj.gameList.add(gameDataToAdd);
+            gameObj.createGame(gameDataToAdd);
             return new CreateGameResponse(newGameID, null, 200);
         } else {
             return new CreateGameResponse(null, "ERROR - Unauthorized", 401);
@@ -70,22 +69,22 @@ public class GameService {
         }
 
         if (authenticated) {
-            for (int i = 0; i < gameObj.gameList.size(); i = i + 1) {
+            for (int i = 0; i < gameObj.getSize(); i = i + 1) {
                 // Does the game exist?
-                if (gameObj.gameList.get(i).gameID() == req.getGameID()) {
+                if (gameObj.getGame(i).gameID() == req.getGameID()) {
                     if (req.getPlayerColor() == null) {
                         // Joins as observer
                         return new JoinGameResponse(null, 200);
                     } else {
-                        if (req.getPlayerColor() != null && req.getPlayerColor().equals("WHITE") && gameObj.gameList.get(i).whiteUsername() == null) {
+                        if (req.getPlayerColor() != null && req.getPlayerColor().equals("WHITE") && gameObj.getGame(i).whiteUsername() == null) {
                             String newWhite = authObj.getAuth(userNumber).username();
-                            GameData gameToUpdate = new GameData(req.getGameID(), newWhite, gameObj.gameList.get(i).blackUsername(), gameObj.gameList.get(i).gameName(), gameObj.gameList.get(i).game());
-                            gameObj.gameList.set(i, gameToUpdate);
+                            GameData gameToUpdate = new GameData(req.getGameID(), newWhite, gameObj.getGame(i).blackUsername(), gameObj.getGame(i).gameName(), gameObj.getGame(i).game());
+                            gameObj.setGame(i, gameToUpdate);
                             return new JoinGameResponse("", 200);
-                        } else if (req.getPlayerColor() != null && req.getPlayerColor().equals("BLACK") && gameObj.gameList.get(i).blackUsername() == null) {
+                        } else if (req.getPlayerColor() != null && req.getPlayerColor().equals("BLACK") && gameObj.getGame(i).blackUsername() == null) {
                             String newBlack = authObj.getAuth(userNumber).username();
-                            GameData gameToUpdate = new GameData(req.getGameID(), gameObj.gameList.get(i).whiteUsername(), newBlack, gameObj.gameList.get(i).gameName(), gameObj.gameList.get(i).game());
-                            gameObj.gameList.set(i, gameToUpdate);
+                            GameData gameToUpdate = new GameData(req.getGameID(), gameObj.getGame(i).whiteUsername(), newBlack, gameObj.getGame(i).gameName(), gameObj.getGame(i).game());
+                            gameObj.setGame(i, gameToUpdate);
                             return new JoinGameResponse("", 200);
                         } else {
                             return new JoinGameResponse("ERROR - Already taken", 403);

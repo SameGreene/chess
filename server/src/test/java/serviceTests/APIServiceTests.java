@@ -1,9 +1,6 @@
 package serviceTests;
 
-import dataAccess.AuthDAO;
-import dataAccess.GameDAO;
-import dataAccess.MemoryAuthDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,9 +23,9 @@ public class APIServiceTests {
     private DBService dbService = new DBService();
     private GameService gameService = new GameService();
 
-    private UserDAO userDAO = new UserDAO();
+    private UserDAO userDAO = new MemoryUserDAO();
     private AuthDAO authDAO = new MemoryAuthDAO();
-    private GameDAO gameDAO = new GameDAO();
+    private GameDAO gameDAO = new MemoryGameDAO();
 
     @BeforeEach
     public void setup() {
@@ -43,7 +40,7 @@ public class APIServiceTests {
         RegisterResponse testResp = userService.regRespond(req, userDAO, authDAO);
 
         assertEquals(authDAO.getAuth(0).username(), req.username);
-        assertEquals(userDAO.userList.get(0).username(), req.username);
+        assertEquals(userDAO.getUser(0).username(), req.username);
     }
 
     @Test
@@ -53,7 +50,7 @@ public class APIServiceTests {
         RegisterResponse testResp = userService.regRespond(badReq, userDAO, authDAO);
 
         assertNotEquals(authDAO.getAuth(0).username(), null);
-        assertNotEquals(userDAO.userList.get(0).username(), null);
+        assertNotEquals(userDAO.getUser(0).username(), null);
     }
 
     @Test
@@ -63,7 +60,7 @@ public class APIServiceTests {
         LoginRequest req = new LoginRequest("TestUser", "Pass");
         LoginResponse testResp = userService.loginRespond(req, userDAO, authDAO);
 
-        assertEquals(userDAO.userList.get(0).password(), req.password);
+        assertEquals(userDAO.getUser(0).password(), req.password);
     }
 
     @Test
@@ -73,7 +70,7 @@ public class APIServiceTests {
         LoginRequest badReq = new LoginRequest("BadUser", "Pass");
         LoginResponse testResp = userService.loginRespond(badReq, userDAO, authDAO);
 
-        assertNotEquals(null, userDAO.userList.get(0).password());
+        assertNotEquals(null, userDAO.getUser(0).password());
     }
 
     @Test
@@ -100,9 +97,9 @@ public class APIServiceTests {
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         ClearResponse testResp = dbService.clearRespond(userDAO, authDAO, gameDAO);
 
-        assertEquals(userDAO.userList.size(), 0);
+        assertEquals(userDAO.getSize(), 0);
         assertEquals(authDAO.getSize(), 0);
-        assertEquals(gameDAO.gameList.size(), 0);
+        assertEquals(gameDAO.getSize(), 0);
     }
 
     @Test
@@ -111,9 +108,9 @@ public class APIServiceTests {
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         ClearResponse testResp = dbService.clearRespond(userDAO, authDAO, gameDAO);
 
-        assertNotEquals(userDAO.userList.size(), 1);
+        assertNotEquals(userDAO.getSize(), 1);
         assertNotEquals(authDAO.getSize(), 1);
-        assertNotEquals(gameDAO.gameList.size(), 1);
+        assertNotEquals(gameDAO.getSize(), 1);
     }
 
     @Test
@@ -123,7 +120,7 @@ public class APIServiceTests {
         CreateGameRequest req = new CreateGameRequest("Game");
         CreateGameResponse resp = gameService.createGameRespond(req, authDAO.getAuth(0).authToken(), authDAO, gameDAO);
 
-        assertEquals(gameDAO.gameList.get(0).gameName(), req.gameName);
+        assertEquals(gameDAO.getGame(0).gameName(), req.gameName);
     }
 
     @Test
@@ -133,7 +130,7 @@ public class APIServiceTests {
         CreateGameRequest req = new CreateGameRequest("Game");
         CreateGameResponse resp = gameService.createGameRespond(req, "BadAuthToken", authDAO, gameDAO);
 
-        assertNotEquals(req.gameName, gameDAO.gameList.size());
+        assertNotEquals(req.gameName, gameDAO.getSize());
     }
 
     @Test
@@ -144,7 +141,7 @@ public class APIServiceTests {
         CreateGameResponse createResp = gameService.createGameRespond(createReq, authDAO.getAuth(0).authToken(), authDAO, gameDAO);
         ListGamesResponse resp = gameService.listGamesRespond(authDAO.getAuth(0).authToken(), authDAO, gameDAO);
 
-        assertEquals(gameDAO.gameList.size(), 1);
+        assertEquals(gameDAO.getSize(), 1);
     }
 
     @Test
@@ -155,7 +152,7 @@ public class APIServiceTests {
         CreateGameResponse createResp = gameService.createGameRespond(createReq, authDAO.getAuth(0).authToken(), authDAO, gameDAO);
         ListGamesResponse resp = gameService.listGamesRespond("BadAuthToken", authDAO, gameDAO);
 
-        assertNotEquals(resp.games, gameDAO.gameList);
+        assertNotEquals(resp.games, gameDAO.returnGameList());
     }
 
     @Test
@@ -164,7 +161,7 @@ public class APIServiceTests {
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest createReq = new CreateGameRequest("Game");
         CreateGameResponse createResp = gameService.createGameRespond(createReq, authDAO.getAuth(0).authToken(), authDAO, gameDAO);
-        JoinGameRequest req = new JoinGameRequest("WHITE", gameDAO.gameList.get(0).gameID());
+        JoinGameRequest req = new JoinGameRequest("WHITE", gameDAO.getGame(0).gameID());
         JoinGameResponse resp = gameService.joinGameRespond(req, authDAO.getAuth(0).authToken(), authDAO, gameDAO);
 
         assertEquals(200, resp.status);
@@ -176,7 +173,7 @@ public class APIServiceTests {
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest createReq = new CreateGameRequest("Game");
         CreateGameResponse createResp = gameService.createGameRespond(createReq, authDAO.getAuth(0).authToken(), authDAO, gameDAO);
-        JoinGameRequest req = new JoinGameRequest("WHITE", gameDAO.gameList.get(0).gameID());
+        JoinGameRequest req = new JoinGameRequest("WHITE", gameDAO.getGame(0).gameID());
         JoinGameResponse resp = gameService.joinGameRespond(req, "BadAuthToken", authDAO, gameDAO);
 
         assertNotEquals(200, resp.status);

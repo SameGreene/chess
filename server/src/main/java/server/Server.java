@@ -1,16 +1,14 @@
 package server;
 
-import dataAccess.AuthDAO;
-import dataAccess.GameDAO;
-import dataAccess.UserDAO;
+import dataAccess.*;
 import handler.*;
 import spark.*;
 
 public class Server {
 
     UserDAO userObj = new UserDAO();
-    AuthDAO authObj = new AuthDAO();
-    GameDAO gameObj = new GameDAO();
+    AuthDAO authObj = new MemoryAuthDAO();
+    GameDAO gameObj = new MemoryGameDAO();
 
     public static void main(String[] args) {
         Server myServer = new Server();
