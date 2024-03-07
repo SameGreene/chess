@@ -2,6 +2,7 @@ package dataAccess;
 
 import java.sql.*;
 import java.util.Properties;
+import com.google.gson.Gson;
 
 public class DatabaseManager {
     private static final String databaseName;
@@ -34,13 +35,46 @@ public class DatabaseManager {
     /**
      * Creates the database if it does not already exist.
      */
-    static void createDatabase() throws DataAccessException {
+    public static void createDatabase() throws DataAccessException {
         try {
+            // Create database
             var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
             var conn = DriverManager.getConnection(connectionUrl, user, password);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
             }
+
+            // Access the database
+            conn.setCatalog(databaseName);
+
+            // Create games table
+            String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
+                    "gameID INT PRIMARY KEY, " +
+                    "whiteUsername VARCHAR(255), " +
+                    "blackUsername VARCHAR(255), " +
+                    "gameName VARCHAR(255), " +
+                    "game JSON" + ")";
+            try (var preparedStatement = conn.prepareStatement(createGamesTable)) {
+                preparedStatement.executeUpdate();
+            }
+
+            // Create users table
+            String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
+                    "username VARCHAR(255) PRIMARY KEY, " +
+                    "password VARCHAR(255), " +
+                    "email VARCHAR(255)" + ")";
+            try (var preparedStatement = conn.prepareStatement(createUsersTable)){
+                preparedStatement.executeUpdate();
+            }
+
+            // Create auth table
+            String createAuthTable = "CREATE TABLE IF NOT EXISTS auth (" +
+                    "authToken VARCHAR(255) PRIMARY KEY, " +
+                    "username VARCHAR(255)" + ")";
+            try (var preparedStatement = conn.prepareStatement(createAuthTable)){
+                preparedStatement.executeUpdate();
+            }
+
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }

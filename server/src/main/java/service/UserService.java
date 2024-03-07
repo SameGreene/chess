@@ -1,6 +1,7 @@
 package service;
 
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.UserDAO;
 import model.AuthData;
 import model.UserData;
@@ -13,7 +14,7 @@ import response.RegisterResponse;
 import java.util.UUID;
 
 public class UserService {
-    public RegisterResponse regRespond(RegisterRequest req, UserDAO userObj, AuthDAO authObj) {
+    public RegisterResponse regRespond(RegisterRequest req, UserDAO userObj, AuthDAO authObj) throws DataAccessException {
         String username = null;
         String authToken = null;
         String message = "";
@@ -34,23 +35,20 @@ public class UserService {
         }
 
         UserData userDataToAdd = new UserData(req.getUsername(), req.getPassword(), req.getEmail());
-        AuthData authDataToAdd = new AuthData(UUID.randomUUID().toString(), req.getUsername());
         username = req.getUsername();
         userObj.createUser(userDataToAdd);
-        authObj.createAuth(authDataToAdd);
-        authToken = authDataToAdd.authToken();
+        authObj.createAuth(username);
 
         return new RegisterResponse(username, authToken, message, status);
     }
 
-    public LoginResponse loginRespond(LoginRequest req, UserDAO userObj, AuthDAO authObj) {
+    public LoginResponse loginRespond(LoginRequest req, UserDAO userObj, AuthDAO authObj) throws DataAccessException {
         String username = req.getUsername();
         String authToken = "";
 
         for (int i = 0; i < userObj.getSize(); i = i + 1) {
             if (userObj.getUser(i).username().equals(req.getUsername()) && req.password.equals(userObj.getUser(i).password())) {
-                authToken = UUID.randomUUID().toString();
-                authObj.createAuth(new AuthData(authToken, username));
+                authObj.createAuth(username);
                 return new LoginResponse(username, authToken, "", 200);
             }
             else {

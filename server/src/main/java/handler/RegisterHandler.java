@@ -2,6 +2,7 @@ package handler;
 
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.UserDAO;
 import request.RegisterRequest;
 import response.RegisterResponse;
@@ -10,7 +11,7 @@ import spark.Request;
 import spark.Response;
 
 public class RegisterHandler {
-    public Object handle (Request request, Response response, UserDAO userObj, AuthDAO authObj){
+    public Object handle (Request request, Response response, UserDAO userObj, AuthDAO authObj) throws DataAccessException {
         Gson myGson = new Gson();
         RegisterRequest myRequest = myGson.fromJson(request.body(), RegisterRequest.class);
         UserService myUserService = new UserService();

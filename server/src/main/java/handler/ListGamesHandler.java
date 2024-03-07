@@ -2,6 +2,7 @@ package handler;
 
 import com.google.gson.Gson;
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import response.ListGamesResponse;
 import service.GameService;
@@ -10,7 +11,7 @@ import spark.Response;
 
 public class ListGamesHandler {
 
-    public Object handle(Request request, Response response, AuthDAO authObj, GameDAO gameObj){
+    public Object handle(Request request, Response response, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
         Gson myGson = new Gson();
         String authToken = request.headers("authorization");
         GameService myGameService = new GameService();

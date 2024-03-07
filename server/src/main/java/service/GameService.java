@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataAccess.AuthDAO;
+import dataAccess.DataAccessException;
 import dataAccess.GameDAO;
 import model.GameData;
 import request.CreateGameRequest;
@@ -11,7 +12,7 @@ import response.ListGamesResponse;
 import response.JoinGameResponse;
 
 public class GameService {
-    public ListGamesResponse listGamesRespond(String authToken, AuthDAO authObj, GameDAO gameObj) {
+    public ListGamesResponse listGamesRespond(String authToken, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
         boolean authenticated = false;
         // Check for authentication
         for (int i = 0; i < authObj.getSize(); i = i + 1) {
@@ -27,7 +28,7 @@ public class GameService {
         }
     }
 
-    public CreateGameResponse createGameRespond(CreateGameRequest req, String authToken, AuthDAO authObj, GameDAO gameObj) {
+    public CreateGameResponse createGameRespond(CreateGameRequest req, String authToken, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
         boolean authenticated = false;
 
         if (req.getGameName() == null) {
@@ -51,7 +52,7 @@ public class GameService {
         }
     }
 
-    public JoinGameResponse joinGameRespond(JoinGameRequest req, String authToken, AuthDAO authObj, GameDAO gameObj) {
+    public JoinGameResponse joinGameRespond(JoinGameRequest req, String authToken, AuthDAO authObj, GameDAO gameObj) throws DataAccessException {
         boolean authenticated = false;
         int userNumber = 0;
 

@@ -6,7 +6,7 @@ import spark.*;
 
 public class Server {
 
-    UserDAO userObj = new UserDAO();
+    UserDAO userObj = new MemoryUserDAO();
     AuthDAO authObj = new MemoryAuthDAO();
     GameDAO gameObj = new MemoryGameDAO();
 
@@ -20,6 +20,13 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        try {
+            DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", ((request, response) -> new ClearHandler().handle(request, response, userObj, authObj, gameObj)));

@@ -35,7 +35,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodRegRespond(){
+    public void goodRegRespond() throws DataAccessException {
         RegisterRequest req = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse testResp = userService.regRespond(req, userDAO, authDAO);
 
@@ -44,7 +44,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badRegRespond(){
+    public void badRegRespond() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterRequest badReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse testResp = userService.regRespond(badReq, userDAO, authDAO);
@@ -54,7 +54,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodLoginRespond(){
+    public void goodLoginRespond() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         LoginRequest req = new LoginRequest("TestUser", "Pass");
@@ -64,7 +64,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badLoginRequest(){
+    public void badLoginRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         LoginRequest badReq = new LoginRequest("BadUser", "Pass");
@@ -74,7 +74,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodLogoutRequest(){
+    public void goodLogoutRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         LogoutResponse testResp = userService.logoutRespond(authDAO.getAuth(0).authToken(), authDAO);
@@ -83,7 +83,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badLogoutRequest(){
+    public void badLogoutRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         LogoutResponse testResp = userService.logoutRespond("auth", authDAO);
@@ -92,7 +92,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodClearRequest(){
+    public void goodClearRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         ClearResponse testResp = dbService.clearRespond(userDAO, authDAO, gameDAO);
@@ -103,7 +103,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badClearRequest(){
+    public void badClearRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         ClearResponse testResp = dbService.clearRespond(userDAO, authDAO, gameDAO);
@@ -114,7 +114,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodCreateGameRequest(){
+    public void goodCreateGameRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest req = new CreateGameRequest("Game");
@@ -124,7 +124,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badCreateGameRequest(){
+    public void badCreateGameRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest req = new CreateGameRequest("Game");
@@ -134,7 +134,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodListGamesRequest(){
+    public void goodListGamesRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest createReq = new CreateGameRequest("Game");
@@ -145,7 +145,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badListGamesRequest(){
+    public void badListGamesRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest createReq = new CreateGameRequest("Game");
@@ -156,7 +156,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void goodJoinGameRequest(){
+    public void goodJoinGameRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest createReq = new CreateGameRequest("Game");
@@ -168,7 +168,7 @@ public class APIServiceTests {
     }
 
     @Test
-    public void badJoinGameRequest(){
+    public void badJoinGameRequest() throws DataAccessException {
         RegisterRequest goodReq = new RegisterRequest("TestUser", "Pass", "my@mail.com");
         RegisterResponse goodResp = userService.regRespond(goodReq, userDAO, authDAO);
         CreateGameRequest createReq = new CreateGameRequest("Game");

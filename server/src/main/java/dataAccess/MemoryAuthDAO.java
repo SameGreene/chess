@@ -4,12 +4,14 @@ import model.AuthData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class MemoryAuthDAO implements AuthDAO{
     public List<AuthData> authList = new ArrayList<>();
     @Override
-    public void createAuth(AuthData auth) {
-        authList.add(auth);
+    public void createAuth(String username) throws DataAccessException{
+        AuthData authToAdd = new AuthData(UUID.randomUUID().toString(), username);
+        authList.add(authToAdd);
     }
     @Override
     public void removeAuth(int index) {
