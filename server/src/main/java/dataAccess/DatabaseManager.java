@@ -49,7 +49,8 @@ public class DatabaseManager {
 
             // Create games table
             String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
-                    "gameID INT NOT NULL PRIMARY KEY, " +
+                    "ID INT NOT NULL PRIMARY KEY, " +
+                    "gameID INT NOT NULL, " +
                     "whiteUsername VARCHAR(255), " +
                     "blackUsername VARCHAR(255), " +
                     "gameName VARCHAR(255), " +

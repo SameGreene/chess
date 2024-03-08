@@ -13,11 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
-    public int currentID = 1;
+    public int currentID = 0;
 
     @Override
     public void createGame(GameData game) {
-        currentID += 1;
 
         Connection conn = null;
         try {
@@ -26,16 +25,17 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO games (gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO games (ID, gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?, ?)")) {
             preparedStatement.setInt(1, currentID);
-            preparedStatement.setString(2, game.whiteUsername());
-            preparedStatement.setString(3, game.blackUsername());
-            preparedStatement.setString(4, game.gameName());
+            preparedStatement.setInt(2, currentID + 1);
+            preparedStatement.setString(3, game.whiteUsername());
+            preparedStatement.setString(4, game.blackUsername());
+            preparedStatement.setString(5, game.gameName());
             // Serialize Game object to JSON
             Gson gson = new Gson();
             String jsonGame;
             jsonGame = gson.toJson(game.game());
-            preparedStatement.setString(5, jsonGame);
+            preparedStatement.setString(6, jsonGame);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             try {
@@ -54,7 +54,7 @@ public class SQLGameDAO implements GameDAO {
 
     @Override
     public int getCurrentID() {
-        return currentID;
+        return currentID + 1;
     }
 
     @Override
@@ -145,7 +145,7 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?), WHERE gameID = (?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?) WHERE gameID = (?)")) {
             preparedStatement.setInt(1, game.gameID());
             preparedStatement.setString(2, game.whiteUsername());
             preparedStatement.setString(3, game.blackUsername());
@@ -241,6 +241,6 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        return null;
+        return gameList;
     }
 }

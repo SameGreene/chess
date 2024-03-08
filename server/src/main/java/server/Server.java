@@ -29,11 +29,6 @@ public class Server {
             throw new RuntimeException(e);
         }
 
-        // Clear tables
-        authObj.clearAuthList();
-        userObj.clearUserList();
-        gameObj.clearGameList();
-
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", ((request, response) -> new ClearHandler().handle(request, response, userObj, authObj, gameObj)));
         Spark.post("/user", ((request, response) -> new RegisterHandler().handle(request, response, userObj, authObj)));
