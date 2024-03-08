@@ -10,12 +10,12 @@ public class MemoryAuthDAO implements AuthDAO {
     public List<AuthData> authList = new ArrayList<>();
 
     @Override
-    public void createAuth(AuthData authData) throws DataAccessException {
+    public void createAuth(AuthData authData){
         authList.add(authData);
     }
 
     @Override
-    public void removeAuth(AuthData authData) throws DataAccessException {
+    public void removeAuth(AuthData authData){
         authList.remove(authData);
     }
 

@@ -13,7 +13,8 @@ public class MemoryUserDAO implements UserDAO{
     }
     @Override
     public void removeUser(int index) {
-        userList.remove(index);
+        // Not implemented
+        return;
     }
     @Override
     public UserData getUser(int index) {
