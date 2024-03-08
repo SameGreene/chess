@@ -201,6 +201,8 @@ public class SQLGameDAO implements GameDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        currentID = 0;
     }
 
     @Override

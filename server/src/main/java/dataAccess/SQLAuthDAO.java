@@ -167,5 +167,7 @@ public class SQLAuthDAO implements AuthDAO{
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+
+        authIndex = 0;
     }
 }
