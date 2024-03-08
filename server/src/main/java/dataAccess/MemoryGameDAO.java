@@ -7,15 +7,19 @@ import java.util.List;
 
 public class MemoryGameDAO implements GameDAO{
     public List<GameData> gameList = new ArrayList<>();
-    public int currentID = 0;
+    public int currentID = 1;
     @Override
     public void createGame(GameData game) {
-        gameList.add(game);
         currentID += 1;
+        gameList.add(game);
     }
     @Override
     public int getCurrentID(){
         return currentID;
+    }
+    @Override
+    public void setCurrentID(int i) {
+        currentID = i;
     }
     @Override
     public void removeGame(int index) {

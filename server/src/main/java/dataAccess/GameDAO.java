@@ -13,5 +13,5 @@ public interface GameDAO {
     int getSize();
     void clearGameList();
     List<GameData> returnGameList();
-
+    void setCurrentID(int i);
 }

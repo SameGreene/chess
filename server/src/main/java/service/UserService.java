@@ -21,9 +21,11 @@ public class UserService {
         int status = 200;
 
         if (req.getUsername() == null || req.getPassword() == null || req.getEmail() == null) {
+            username = null;
+            authToken = null;
             message = "ERROR - Bad request";
             status = 400;
-            return new RegisterResponse(null, null, message, status);
+            return new RegisterResponse(username, authToken, message, status);
         }
 
         for (int i = 0; i < userObj.getSize(); i = i + 1) {
@@ -37,7 +39,9 @@ public class UserService {
         UserData userDataToAdd = new UserData(req.getUsername(), req.getPassword(), req.getEmail());
         username = req.getUsername();
         userObj.createUser(userDataToAdd);
-        authObj.createAuth(username);
+        AuthData authDataToAdd = new AuthData(UUID.randomUUID().toString(), req.getUsername());
+        authToken = authDataToAdd.authToken();
+        authObj.createAuth(authDataToAdd);
 
         return new RegisterResponse(username, authToken, message, status);
     }
@@ -48,7 +52,8 @@ public class UserService {
 
         for (int i = 0; i < userObj.getSize(); i = i + 1) {
             if (userObj.getUser(i).username().equals(req.getUsername()) && req.password.equals(userObj.getUser(i).password())) {
-                authObj.createAuth(username);
+                authToken = UUID.randomUUID().toString();
+                authObj.createAuth(new AuthData(authToken, username));
                 return new LoginResponse(username, authToken, "", 200);
             }
             else {
@@ -59,10 +64,10 @@ public class UserService {
         return new LoginResponse(null, null, "ERROR - User does not exist", 401);
     }
 
-    public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) {
+    public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) throws DataAccessException {
         for (int i = 0; i < authObj.getSize(); i = i + 1) {
-            if (authToken.equals(authObj.getAuth(i).authToken())) {
-                authObj.removeAuth(i);
+            if (authObj.getAuthByID(i).authToken().equals(authToken)) {
+                authObj.removeAuth(authObj.getAuthByID(i));
                 return new LogoutResponse(null, 200);
             }
         }
