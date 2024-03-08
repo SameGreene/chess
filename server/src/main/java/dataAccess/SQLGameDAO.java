@@ -44,6 +44,12 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -65,7 +71,7 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE * FROM games WHERE ID = (?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE * FROM games WHERE gameID = (?)")) {
             preparedStatement.setInt(1, index);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
@@ -74,6 +80,12 @@ public class SQLGameDAO implements GameDAO {
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -86,7 +98,7 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM games WHERE ID = (?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM games WHERE gameID = (?)")) {
             preparedStatement.setInt(1, index);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if(resultSet.next()) {
@@ -97,6 +109,13 @@ public class SQLGameDAO implements GameDAO {
                     String jsonGame = resultSet.getString("game");
                     Gson gson = new Gson();
                     ChessGame gameFromJSON = gson.fromJson(jsonGame, ChessGame.class);
+
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     return new GameData(gameID, whiteUsername, blackUsername, gameName, gameFromJSON);
                 }
             }
@@ -106,6 +125,12 @@ public class SQLGameDAO implements GameDAO {
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         return null;
@@ -120,7 +145,7 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?), WHERE ID = (?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?), WHERE gameID = (?)")) {
             preparedStatement.setInt(1, game.gameID());
             preparedStatement.setString(2, game.whiteUsername());
             preparedStatement.setString(3, game.blackUsername());
@@ -139,35 +164,17 @@ public class SQLGameDAO implements GameDAO {
                 throw new RuntimeException(ex);
             }
         }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public int getSize() {
-        int size = 0;
-
-        Connection conn = null;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT COUNT(*) FROM games")) {
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    size = resultSet.getInt(1);
-                    return size;
-                }
-            }
-        } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        return size;
+        return currentID + 1;
     }
 
     @Override
@@ -187,6 +194,12 @@ public class SQLGameDAO implements GameDAO {
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -220,6 +233,12 @@ public class SQLGameDAO implements GameDAO {
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         return null;

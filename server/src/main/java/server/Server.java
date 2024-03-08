@@ -4,6 +4,8 @@ import dataAccess.*;
 import handler.*;
 import spark.*;
 
+import javax.xml.crypto.Data;
+
 public class Server {
 
     UserDAO userObj = new SQLUserDAO();
@@ -27,6 +29,10 @@ public class Server {
             throw new RuntimeException(e);
         }
 
+        // Clear tables
+        authObj.clearAuthList();
+        userObj.clearUserList();
+        gameObj.clearGameList();
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", ((request, response) -> new ClearHandler().handle(request, response, userObj, authObj, gameObj)));

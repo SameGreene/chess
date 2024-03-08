@@ -33,6 +33,12 @@ public class SQLUserDAO implements UserDAO {
                 throw new RuntimeException(ex);
             }
         }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -57,6 +63,13 @@ public class SQLUserDAO implements UserDAO {
                     String username = resultSet.getString("username");
                     String password = resultSet.getString("password");
                     String email = resultSet.getString("email");
+
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     return new UserData(username, password, email);
                 }
             }
@@ -68,12 +81,17 @@ public class SQLUserDAO implements UserDAO {
             }
         }
 
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         return null;
     }
 
     @Override
     public int getSize() {
-
         return this.userIndex + 1;
     }
 
@@ -94,6 +112,12 @@ public class SQLUserDAO implements UserDAO {
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

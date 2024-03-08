@@ -12,8 +12,6 @@ public class SQLAuthDAO implements AuthDAO{
     private int authIndex = 0;
     @Override
     public void createAuth(AuthData authData){
-        AuthData newAuth = new AuthData(UUID.randomUUID().toString(), authData.username());
-
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -23,8 +21,8 @@ public class SQLAuthDAO implements AuthDAO{
 
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (ID, authToken, username) VALUES(?, ?, ?)")) {
             preparedStatement.setInt(1, this.authIndex);
-            preparedStatement.setString(2, newAuth.authToken());
-            preparedStatement.setString(3, newAuth.username());
+            preparedStatement.setString(2, authData.authToken());
+            preparedStatement.setString(3, authData.username());
             preparedStatement.executeUpdate();
             this.authIndex++;
         } catch (SQLException e) {
@@ -33,6 +31,12 @@ public class SQLAuthDAO implements AuthDAO{
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
     @Override
@@ -54,6 +58,12 @@ public class SQLAuthDAO implements AuthDAO{
                 throw new RuntimeException(ex);
             }
         }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
     @Override
     public AuthData getAuth(String username) {
@@ -69,6 +79,13 @@ public class SQLAuthDAO implements AuthDAO{
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if(resultSet.next()) {
                     String authToken = resultSet.getString("authToken");
+
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     return new AuthData(authToken, username);
                 }
             }
@@ -96,6 +113,13 @@ public class SQLAuthDAO implements AuthDAO{
                 if(resultSet.next()) {
                     String authToken = resultSet.getString("authToken");
                     String username = resultSet.getString("username");
+
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+
                     return new AuthData(authToken, username);
                 }
             }
@@ -107,11 +131,17 @@ public class SQLAuthDAO implements AuthDAO{
             }
         }
 
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         return null;
     }
     @Override
     public int getSize() {
-        return this.authIndex;
+        return this.authIndex + 1;
     }
     @Override
     public void clearAuthList() {
@@ -130,6 +160,12 @@ public class SQLAuthDAO implements AuthDAO{
             } catch (DataAccessException ex) {
                 throw new RuntimeException(ex);
             }
+        }
+
+        try {
+            conn.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }

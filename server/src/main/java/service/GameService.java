@@ -16,6 +16,7 @@ public class GameService {
         boolean authenticated = false;
         // Check for authentication
         for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authObj.getAuthByID(i) == null) continue;
             if (authToken.equals(authObj.getAuthByID(i).authToken())) {
                 authenticated = true;
                 break;
@@ -36,6 +37,7 @@ public class GameService {
         }
         // Check for authentication
         for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authObj.getAuthByID(i) == null) continue;
             if (authObj.getAuthByID(i).authToken().equals(authToken)) {
                 authenticated = true;
                 break;
@@ -62,6 +64,7 @@ public class GameService {
         } else {
             // Check for authentication
             for (int i = 0; i < authObj.getSize(); i = i + 1) {
+                if (authObj.getAuthByID(i) == null) continue;
                 if (authObj.getAuthByID(i).authToken().equals(authToken)) {
                     authenticated = true;
                     userNumber = i;
@@ -73,6 +76,7 @@ public class GameService {
         if (authenticated) {
             for (int i = 0; i < gameObj.getSize(); i = i + 1) {
                 // Does the game exist?
+                if (gameObj.getGame(i) == null) continue;
                 if (gameObj.getGame(i).gameID() == req.getGameID()) {
                     if (req.getPlayerColor() == null) {
                         // Joins as observer

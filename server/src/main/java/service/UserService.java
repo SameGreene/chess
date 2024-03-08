@@ -52,8 +52,7 @@ public class UserService {
         String authToken = "";
 
         for (int i = 0; i < userObj.getSize(); i = i + 1) {
-            //Add a null check on the userObj.getUser(i) as when
-            if(userObj.getUser(i) == null) continue;
+            if (userObj.getUser(i) == null) continue;
             if (userObj.getUser(i).username().equals(req.getUsername()) && req.password.equals(userObj.getUser(i).password())) {
                 authToken = UUID.randomUUID().toString();
                 authObj.createAuth(new AuthData(authToken, username));
@@ -69,6 +68,7 @@ public class UserService {
 
     public LogoutResponse logoutRespond(String authToken, AuthDAO authObj) throws DataAccessException {
         for (int i = 0; i < authObj.getSize(); i = i + 1) {
+            if (authObj.getAuthByID(i) == null) continue;
             if (authObj.getAuthByID(i).authToken().equals(authToken)) {
                 authObj.removeAuth(authObj.getAuthByID(i));
                 return new LogoutResponse(null, 200);
