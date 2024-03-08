@@ -152,7 +152,7 @@ public class SQLAuthDAO implements AuthDAO{
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE users")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE auth")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             try {
