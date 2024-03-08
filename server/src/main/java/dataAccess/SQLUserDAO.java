@@ -4,9 +4,12 @@ import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SQLUserDAO implements UserDAO {
+
+    private int userIndex = 0;
     @Override
     public void createUser(UserData newUser) {
         Connection conn = null;
@@ -16,11 +19,13 @@ public class SQLUserDAO implements UserDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (username, password, email) VALUES(?, ?, ?)")) {
-            preparedStatement.setString(1, newUser.username());
-            preparedStatement.setString(2, newUser.password());
-            preparedStatement.setString(3, newUser.email());
+        try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO users (ID, username, password, email) VALUES(?, ?, ?, ?)")) {
+            preparedStatement.setInt(1, this.userIndex);
+            preparedStatement.setString(2, newUser.username());
+            preparedStatement.setString(3, newUser.password());
+            preparedStatement.setString(4, newUser.email());
             preparedStatement.executeUpdate();
+            this.userIndex++;
         } catch (SQLException e) {
             try {
                 throw new DataAccessException(e.getMessage());
@@ -38,16 +43,57 @@ public class SQLUserDAO implements UserDAO {
 
     @Override
     public UserData getUser(int index) {
+        Connection conn = null;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+
+        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM users WHERE ID = (?)")) {
+            preparedStatement.setInt(1, index);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if(resultSet.next()) {
+                    String username = resultSet.getString("username");
+                    String password = resultSet.getString("password");
+                    String email = resultSet.getString("email");
+                    return new UserData(username, password, email);
+                }
+            }
+        } catch (SQLException e) {
+            try {
+                throw new DataAccessException(e.getMessage());
+            } catch (DataAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+
         return null;
     }
 
     @Override
     public int getSize() {
-        return 0;
+
+        return this.userIndex + 1;
     }
 
     @Override
     public void clearUserList() {
+        Connection conn = null;
+        try {
+            conn = DatabaseManager.getConnection();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
 
+        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE users")) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            try {
+                throw new DataAccessException(e.getMessage());
+            } catch (DataAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 }

@@ -49,7 +49,8 @@ public class DatabaseManager {
 
             // Create games table
             String createGamesTable = "CREATE TABLE IF NOT EXISTS games (" +
-                    "gameID INT PRIMARY KEY, " +
+                    "ID INT NOT NULL PRIMARY KEY, " +
+                    "gameID INT, " +
                     "whiteUsername VARCHAR(255), " +
                     "blackUsername VARCHAR(255), " +
                     "gameName VARCHAR(255), " +
@@ -60,7 +61,8 @@ public class DatabaseManager {
 
             // Create users table
             String createUsersTable = "CREATE TABLE IF NOT EXISTS users (" +
-                    "username VARCHAR(255) PRIMARY KEY, " +
+                    "ID INT NOT NULL PRIMARY KEY, " +
+                    "username VARCHAR(255), " +
                     "password VARCHAR(255), " +
                     "email VARCHAR(255)" + ")";
             try (var preparedStatement = conn.prepareStatement(createUsersTable)){
@@ -69,7 +71,8 @@ public class DatabaseManager {
 
             // Create auth table
             String createAuthTable = "CREATE TABLE IF NOT EXISTS auth (" +
-                    "authToken VARCHAR(255) PRIMARY KEY, " +
+                    "ID INT NOT NULL PRIMARY KEY, " +
+                    "authToken VARCHAR(255), " +
                     "username VARCHAR(255)" + ")";
             try (var preparedStatement = conn.prepareStatement(createAuthTable)){
                 preparedStatement.executeUpdate();

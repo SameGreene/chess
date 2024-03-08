@@ -29,6 +29,7 @@ public class UserService {
         }
 
         for (int i = 0; i < userObj.getSize(); i = i + 1) {
+            if(userObj.getUser(i) == null) continue;
             if (userObj.getUser(i).username().equals(req.getUsername())) {
                 message = "ERROR - User already exists";
                 status = 403;
@@ -51,6 +52,8 @@ public class UserService {
         String authToken = "";
 
         for (int i = 0; i < userObj.getSize(); i = i + 1) {
+            //Add a null check on the userObj.getUser(i) as when
+            if(userObj.getUser(i) == null) continue;
             if (userObj.getUser(i).username().equals(req.getUsername()) && req.password.equals(userObj.getUser(i).password())) {
                 authToken = UUID.randomUUID().toString();
                 authObj.createAuth(new AuthData(authToken, username));

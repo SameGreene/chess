@@ -1,12 +1,15 @@
 package dataAccess;
 
 import model.AuthData;
+import model.UserData;
 
 import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.UUID;
 
 public class SQLAuthDAO implements AuthDAO{
+
+    private int authIndex = 0;
     @Override
     public void createAuth(AuthData authData){
         AuthData newAuth = new AuthData(UUID.randomUUID().toString(), authData.username());
@@ -18,10 +21,12 @@ public class SQLAuthDAO implements AuthDAO{
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (authToken, username) VALUES(?, ?)")) {
-            preparedStatement.setString(1, newAuth.authToken());
-            preparedStatement.setString(2, newAuth.username());
+        try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (ID, authToken, username) VALUES(?, ?, ?)")) {
+            preparedStatement.setInt(1, this.authIndex);
+            preparedStatement.setString(2, newAuth.authToken());
+            preparedStatement.setString(3, newAuth.username());
             preparedStatement.executeUpdate();
+            this.authIndex++;
         } catch (SQLException e) {
             try {
                 throw new DataAccessException(e.getMessage());
@@ -78,12 +83,6 @@ public class SQLAuthDAO implements AuthDAO{
         return null;
     }
     public AuthData getAuthByID(int index){
-        return null;
-    }
-    @Override
-    public int getSize() {
-        int size = 0;
-
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -91,11 +90,13 @@ public class SQLAuthDAO implements AuthDAO{
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT COUNT(*) FROM auth")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM auth WHERE ID = (?)")) {
+            preparedStatement.setInt(1, index);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if(resultSet.next()) {
-                    size = resultSet.getInt(1);
-                    return size;
+                    String authToken = resultSet.getString("authToken");
+                    String username = resultSet.getString("username");
+                    return new AuthData(authToken, username);
                 }
             }
         } catch (SQLException e) {
@@ -106,7 +107,11 @@ public class SQLAuthDAO implements AuthDAO{
             }
         }
 
-        return size;
+        return null;
+    }
+    @Override
+    public int getSize() {
+        return this.authIndex;
     }
     @Override
     public void clearAuthList() {
@@ -117,7 +122,7 @@ public class SQLAuthDAO implements AuthDAO{
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE auth")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE users")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             try {
