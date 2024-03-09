@@ -27,7 +27,8 @@ public class SQLGameDAO implements GameDAO {
 
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO games (ID, gameID, whiteUsername, blackUsername, gameName, game) VALUES(?, ?, ?, ?, ?, ?)")) {
             preparedStatement.setInt(1, currentID);
-            preparedStatement.setInt(2, currentID + 1);
+            currentID = currentID + 1;
+            preparedStatement.setInt(2, game.gameID());
             preparedStatement.setString(3, game.whiteUsername());
             preparedStatement.setString(4, game.blackUsername());
             preparedStatement.setString(5, game.gameName());
@@ -145,7 +146,7 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?) WHERE gameID = (?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("UPDATE games SET gameID = (?), whiteUsername = (?), blackUsername = (?), gameName = (?), game = (?) WHERE ID = (?)")) {
             preparedStatement.setInt(1, game.gameID());
             preparedStatement.setString(2, game.whiteUsername());
             preparedStatement.setString(3, game.blackUsername());

@@ -48,7 +48,6 @@ public class GameService {
             int newGameID = gameObj.getCurrentID();
             GameData gameDataToAdd = new GameData(newGameID, null, null, req.getGameName(), new ChessGame());
             gameObj.createGame(gameDataToAdd);
-            gameObj.setCurrentID(gameObj.getCurrentID() + 1);
             return new CreateGameResponse(newGameID, null, 200);
         } else {
             return new CreateGameResponse(null, "ERROR - Unauthorized", 401);

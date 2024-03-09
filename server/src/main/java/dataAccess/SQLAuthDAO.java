@@ -1,13 +1,16 @@
 package dataAccess;
 
 import model.AuthData;
+
 import java.sql.*;
 
-public class SQLAuthDAO implements AuthDAO{
+public class SQLAuthDAO implements AuthDAO {
 
-    private int authIndex = 0;
+    public static int authIndex = 0;
+
     @Override
-    public void createAuth(AuthData authData){
+    public void createAuth(AuthData authData) {
+
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -16,11 +19,11 @@ public class SQLAuthDAO implements AuthDAO{
         }
 
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (ID, authToken, username) VALUES(?, ?, ?)")) {
-            preparedStatement.setInt(1, this.authIndex);
+            preparedStatement.setInt(1, authIndex);
+            authIndex = authIndex + 1;
             preparedStatement.setString(2, authData.authToken());
             preparedStatement.setString(3, authData.username());
             preparedStatement.executeUpdate();
-            this.authIndex = this.authIndex + 1;
         } catch (SQLException e) {
             try {
                 throw new DataAccessException(e.getMessage());
@@ -35,8 +38,9 @@ public class SQLAuthDAO implements AuthDAO{
             throw new RuntimeException(e);
         }
     }
+
     @Override
-    public void removeAuth(AuthData authData){
+    public void removeAuth(AuthData authData) {
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -61,6 +65,7 @@ public class SQLAuthDAO implements AuthDAO{
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public AuthData getAuth(String username) {
         Connection conn = null;
@@ -73,7 +78,7 @@ public class SQLAuthDAO implements AuthDAO{
         try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM auth WHERE username = (?)")) {
             preparedStatement.setString(1, username);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if(resultSet.next()) {
+                if (resultSet.next()) {
                     String authToken = resultSet.getString("authToken");
 
                     try {
@@ -95,7 +100,8 @@ public class SQLAuthDAO implements AuthDAO{
 
         return null;
     }
-    public AuthData getAuthByID(int index){
+
+    public AuthData getAuthByID(int index) {
         Connection conn = null;
         try {
             conn = DatabaseManager.getConnection();
@@ -106,7 +112,7 @@ public class SQLAuthDAO implements AuthDAO{
         try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM auth WHERE ID = (?)")) {
             preparedStatement.setInt(1, index);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if(resultSet.next()) {
+                if (resultSet.next()) {
                     String authToken = resultSet.getString("authToken");
                     String username = resultSet.getString("username");
 
@@ -135,10 +141,12 @@ public class SQLAuthDAO implements AuthDAO{
 
         return null;
     }
+
     @Override
     public int getSize() {
         return this.authIndex + 1;
     }
+
     @Override
     public void clearAuthList() {
         Connection conn = null;
