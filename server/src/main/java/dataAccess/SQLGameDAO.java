@@ -98,7 +98,7 @@ public class SQLGameDAO implements GameDAO {
             throw new RuntimeException(e);
         }
 
-        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM games WHERE gameID = (?)")) {
+        try (PreparedStatement preparedStatement = conn.prepareStatement("SELECT * FROM games WHERE ID = (?)")) {
             preparedStatement.setInt(1, index);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if(resultSet.next()) {

@@ -16,11 +16,11 @@ public class SQLAuthDAO implements AuthDAO{
         }
 
         try (PreparedStatement preparedStatement = conn.prepareStatement("INSERT INTO auth (ID, authToken, username) VALUES(?, ?, ?)")) {
-            preparedStatement.setInt(1, authIndex);
+            preparedStatement.setInt(1, this.authIndex);
             preparedStatement.setString(2, authData.authToken());
             preparedStatement.setString(3, authData.username());
-            authIndex++;
             preparedStatement.executeUpdate();
+            this.authIndex = this.authIndex + 1;
         } catch (SQLException e) {
             try {
                 throw new DataAccessException(e.getMessage());

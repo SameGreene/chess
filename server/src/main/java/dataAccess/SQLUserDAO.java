@@ -25,7 +25,7 @@ public class SQLUserDAO implements UserDAO {
             preparedStatement.setString(3, newUser.password());
             preparedStatement.setString(4, newUser.email());
             preparedStatement.executeUpdate();
-            this.userIndex++;
+            this.userIndex = this.userIndex + 1;
         } catch (SQLException e) {
             try {
                 throw new DataAccessException(e.getMessage());
