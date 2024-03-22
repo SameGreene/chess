@@ -7,6 +7,9 @@ import java.util.List;
 
 public class MemoryUserDAO implements UserDAO{
     public List<UserData> userList = new ArrayList<>();
+
+    @Override
+    public void updateIndex(){}
     @Override
     public void createUser(UserData newUser) {
         userList.add(newUser);

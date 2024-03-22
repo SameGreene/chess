@@ -2,7 +2,6 @@ package dataAccess;
 
 import java.sql.*;
 import java.util.Properties;
-import com.google.gson.Gson;
 
 public class DatabaseManager {
     private static final String databaseName;

@@ -10,6 +10,19 @@ import java.sql.SQLException;
 public class SQLUserDAO implements UserDAO {
 
     private int userIndex = 0;
+
+    public void updateIndex() {
+        String sql = "SELECT MAX(ID) AS max_id FROM users";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                this.userIndex = rs.getInt("max_id") + 1;
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
     @Override
     public void createUser(UserData newUser) {
         Connection conn = null;

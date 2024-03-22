@@ -9,68 +9,70 @@ import request.*;
 import response.*;
 
 public class ServerFacade {
-
     private final String serverUrl;
-    private final int serverPort;
+    private String authToken;
 
     public ServerFacade(String url, int port) {
-        serverUrl = url;
-        serverPort = port;
+        serverUrl = url + ":" + port;
     }
 
     public ClearResponse clearDatabase() throws Exception {
         var path = "/db";
-        this.makeRequest("DELETE", path, null, ClearResponse.class);
+        return this.makeRequest("DELETE", path, null, ClearResponse.class, null);
     }
 
     public RegisterResponse register(String username, String password, String email) throws Exception {
         var path = "/user";
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
-        this.makeRequest("POST", path, registerRequest, RegisterResponse.class);
+        RegisterResponse retResponse = this.makeRequest("POST", path, registerRequest, RegisterResponse.class, null);
+        authToken = retResponse.authToken;
+        return retResponse;
     }
 
     public LoginResponse login(String username, String password) throws Exception {
         var path = "/session";
         LoginRequest loginRequest = new LoginRequest(username, password);
-        this.makeRequest("POST", path, loginRequest, LoginResponse.class);
+        LoginResponse retResponse =  this.makeRequest("POST", path, loginRequest, LoginResponse.class, authToken);
+        authToken = retResponse.authToken;
+        return retResponse;
     }
 
     public LogoutResponse logout() throws Exception {
         var path = "/session";
-        this.makeRequest("DELETE", path, null, LogoutResponse.class);
+        return this.makeRequest("DELETE", path, null, LogoutResponse.class, authToken);
     }
 
     public ListGamesResponse list() throws Exception {
         var path = "/game";
-        this.makeRequest("GET", path, null, ListGamesResponse.class);
+        return this.makeRequest("GET", path, null, ListGamesResponse.class, authToken);
     }
 
     public CreateGameResponse create(String gameName) throws Exception {
         var path = "/game";
         CreateGameRequest createGameRequest = new CreateGameRequest(gameName);
-        this.makeRequest("POST", path, createGameRequest, CreateGameResponse.class);
+        return this.makeRequest("POST", path, createGameRequest, CreateGameResponse.class, authToken);
     }
 
-    public JoinGameResponse join(String playerColor, int gameID){
+    public JoinGameResponse join(String playerColor, int gameID) throws Exception {
         var path = "/game";
         JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, gameID);
-        this.makeRequest("PUT", path, joinGameRequest, JoinGameRequest.class);
+        return this.makeRequest("PUT", path, joinGameRequest, JoinGameResponse.class, authToken);
     }
 
-    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass) throws Exception {
-        try {
-            URL url = (new URI(serverUrl + path)).toURL();
-            HttpURLConnection http = (HttpURLConnection) url.openConnection();
-            http.setRequestMethod(method);
-            http.setDoOutput(true);
+    private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws Exception {
+        URL url = (new URI(serverUrl + path)).toURL();
+        HttpURLConnection http = (HttpURLConnection) url.openConnection();
+        http.setRequestMethod(method);
+        http.setDoOutput(true);
 
-            writeBody(request, http);
-            http.connect();
-            throwIfNotSuccessful(http);
-            return readBody(http, responseClass);
-        } catch (Exception ex) {
-            throw new Exception("500 - Internal server error");
+        if (authToken != null && !authToken.isEmpty()) {
+            http.setRequestProperty("authorization", authToken);
         }
+
+        writeBody(request, http);
+        http.connect();
+        throwIfNotSuccessful(http);
+        return readBody(http, responseClass);
     }
 
     private static void writeBody(Object request, HttpURLConnection http) throws IOException {
@@ -83,7 +85,7 @@ public class ServerFacade {
         }
     }
 
-    private void throwIfNotSuccessful(HttpURLConnection http) throws IOException, Exception {
+    private void throwIfNotSuccessful(HttpURLConnection http) throws Exception {
         var status = http.getResponseCode();
         if (!isSuccessful(status)) {
             throw new Exception("500 - Internal server error");
@@ -102,7 +104,6 @@ public class ServerFacade {
         }
         return response;
     }
-
 
     private boolean isSuccessful(int status) {
         return status / 100 == 2;

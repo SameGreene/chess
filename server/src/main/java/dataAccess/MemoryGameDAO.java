@@ -10,6 +10,8 @@ public class MemoryGameDAO implements GameDAO {
     public int currentID = 1;
 
     @Override
+    public void updateIndex(){}
+    @Override
     public void createGame(GameData game) {
         currentID += 1;
         gameList.add(game);

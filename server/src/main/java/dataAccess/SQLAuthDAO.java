@@ -8,6 +8,19 @@ public class SQLAuthDAO implements AuthDAO {
 
     public static int authIndex = 0;
 
+    public void updateIndex() {
+        String sql = "SELECT MAX(ID) AS max_id FROM auth";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                this.authIndex = rs.getInt("max_id") + 1;
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public void createAuth(AuthData authData) {
 

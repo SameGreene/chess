@@ -5,6 +5,7 @@ import model.GameData;
 import java.util.List;
 
 public interface GameDAO {
+    void updateIndex();
     void createGame(GameData game);
     int getCurrentID();
     void removeGame(int index);

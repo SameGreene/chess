@@ -58,9 +58,6 @@ public class UserService {
                 authObj.createAuth(new AuthData(authToken, username));
                 return new LoginResponse(username, authToken, "", 200);
             }
-            else {
-                return new LoginResponse(null, null, "ERROR - Unauthorized", 401);
-            }
         }
 
         return new LoginResponse(null, null, "ERROR - User does not exist", 401);

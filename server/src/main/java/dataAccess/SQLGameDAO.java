@@ -3,7 +3,6 @@ package dataAccess;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
-import model.UserData;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +13,19 @@ import java.util.List;
 
 public class SQLGameDAO implements GameDAO {
     public int currentID = 0;
+
+    public void updateIndex() {
+        String sql = "SELECT MAX(ID) AS max_id FROM games";
+        try (Connection conn = DatabaseManager.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            if (rs.next()) {
+                this.currentID = rs.getInt("max_id") + 1;
+            }
+        } catch (SQLException | DataAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Override
     public void createGame(GameData game) {

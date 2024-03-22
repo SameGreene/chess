@@ -1,12 +1,12 @@
 package ui;
 
+import javax.swing.tree.AbstractLayoutCache;
 import java.util.Scanner;
 
 public class Client {
 
-    private ServerFacade serverFacade;
-
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        ServerFacade serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
         // Print out welcome screen
         System.out.println("Welcome to CS 240 Chess\nType 'help' to get started");
 
@@ -35,26 +35,30 @@ public class Client {
                         String password = splitPreInput[2];
                         String email = splitPreInput[3];
 
-                        // TODO - Handle register request
-
-                        // Successful. Print success message and move to post state
-                        System.out.println("Logged in as " + blueColor + username + defaultColor);
-                        System.out.println("Type 'help' for a list of available options.");
-                        userState = 1;
+                        try {
+                            serverFacade.register(username, password, email);
+                            // Successful. Print success message and move to post state
+                            System.out.println("Logged in as " + blueColor + username + defaultColor);
+                            System.out.println("Type 'help' for a list of available options.");
+                            userState = 1;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     // login
                     else if (splitPreInput[0].equals("login") && splitPreInput.length == 3) {
                         String username = splitPreInput[1];
                         String password = splitPreInput[2];
-                        System.out.println(username);
-                        System.out.println(password);
 
-                        // TODO - Handle login request
-
-                        // Successful. Print success message and move to post state
-                        System.out.println("Logged in as " + blueColor + username + defaultColor);
-                        System.out.println("Type 'help' for a list of available options.");
-                        userState = 1;
+                        try {
+                            serverFacade.login(username, password);
+                            // Successful. Print success message and move to post state
+                            System.out.println("Logged in as " + blueColor + username + defaultColor);
+                            System.out.println("Type 'help' for a list of available options.");
+                            userState = 1;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     // quit
                     else if (splitPreInput[0].equals("quit")) {
@@ -81,6 +85,14 @@ public class Client {
                     // create
                     if (splitPostInput[0].equals("create") && splitPostInput.length == 2) {
                         String gameName = splitPostInput[1];
+
+                        try {
+                            serverFacade.create(gameName);
+                            // Successful. Print success message
+                            System.out.println("Successfully created game " + blueColor + gameName + defaultColor);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     // list
                     else if (splitPostInput[0].equals("list")) {

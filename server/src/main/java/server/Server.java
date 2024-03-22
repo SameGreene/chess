@@ -4,8 +4,6 @@ import dataAccess.*;
 import handler.*;
 import spark.*;
 
-import javax.xml.crypto.Data;
-
 public class Server {
 
     UserDAO userObj = new SQLUserDAO();
@@ -25,6 +23,9 @@ public class Server {
 
         try {
             DatabaseManager.createDatabase();
+            userObj.updateIndex();
+            authObj.updateIndex();
+            gameObj.updateIndex();
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
