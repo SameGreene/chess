@@ -3,6 +3,9 @@ package ui;
 import java.util.Scanner;
 
 public class Client {
+
+    private ServerFacade serverFacade;
+
     public static void main(String[] args) {
         // Print out welcome screen
         System.out.println("Welcome to CS 240 Chess\nType 'help' to get started");
@@ -130,7 +133,7 @@ public class Client {
 
                 // Error encountered. Exit the program
                 default:
-                    System.out.println("Unknown state error occured. Exiting...");
+                    System.out.println("Unknown state error occurred. Exiting...");
                     return;
             }
         }
