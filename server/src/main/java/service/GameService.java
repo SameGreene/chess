@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import dataAccess.AuthDAO;
 import dataAccess.DataAccessException;
@@ -59,7 +60,7 @@ public class GameService {
         int userNumber = 0;
 
         if (req.gameID == 0) {
-            return new JoinGameResponse("ERROR - Bad Request", 400);
+            return new JoinGameResponse("ERROR - Bad Request", 400, null);
         } else {
             // Check for authentication
             for (int i = 0; i < authObj.getSize(); i = i + 1) {
@@ -77,27 +78,28 @@ public class GameService {
                 // Does the game exist?
                 if (gameObj.getGame(i) == null) continue;
                 if (gameObj.getGame(i).gameID() == req.getGameID()) {
+                    ChessGame chessGame = gameObj.getGame(i).game();
                     if (req.getPlayerColor() == null) {
                         // Joins as observer
-                        return new JoinGameResponse(null, 200);
+                        return new JoinGameResponse(null, 200, chessGame);
                     } else {
                         if (req.getPlayerColor() != null && req.getPlayerColor().equals("WHITE") && gameObj.getGame(i).whiteUsername() == null) {
                             String newWhite = authObj.getAuthByID(userNumber).username();
                             GameData gameToUpdate = new GameData(req.getGameID(), newWhite, gameObj.getGame(i).blackUsername(), gameObj.getGame(i).gameName(), gameObj.getGame(i).game());
                             gameObj.setGame(i, gameToUpdate);
-                            return new JoinGameResponse("", 200);
+                            return new JoinGameResponse("", 200, chessGame);
                         } else if (req.getPlayerColor() != null && req.getPlayerColor().equals("BLACK") && gameObj.getGame(i).blackUsername() == null) {
                             String newBlack = authObj.getAuthByID(userNumber).username();
                             GameData gameToUpdate = new GameData(req.getGameID(), gameObj.getGame(i).whiteUsername(), newBlack, gameObj.getGame(i).gameName(), gameObj.getGame(i).game());
                             gameObj.setGame(i, gameToUpdate);
-                            return new JoinGameResponse("", 200);
+                            return new JoinGameResponse("", 200, chessGame);
                         } else {
-                            return new JoinGameResponse("ERROR - Already taken", 403);
+                            return new JoinGameResponse("ERROR - Already taken", 403, null);
                         }
                     }
                 }
             }
         }
-        return new JoinGameResponse("ERROR - Unauthorized", 401);
+        return new JoinGameResponse("ERROR - Unauthorized", 401, null);
     }
 }

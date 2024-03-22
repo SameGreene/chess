@@ -1,6 +1,9 @@
 package ui;
 
 import model.GameData;
+import chess.ChessBoard;
+import response.CreateGameResponse;
+import response.JoinGameResponse;
 import response.ListGamesResponse;
 
 import javax.swing.tree.AbstractLayoutCache;
@@ -95,7 +98,7 @@ public class Client {
                         String gameName = splitPostInput[1];
 
                         try {
-                            serverFacade.create(gameName);
+                            CreateGameResponse response = serverFacade.create(gameName);
                             // Successful. Print success message
                             System.out.println("Successfully created game " + blueColor + gameName + defaultColor);
                         } catch (Exception e) {
@@ -106,8 +109,8 @@ public class Client {
                     else if (splitPostInput[0].equals("list")) {
                         try {
                             ListGamesResponse response = serverFacade.list();
-                            // Successful. TODO - List all games
-                            System.out.println("Available Games\n----------");
+                            // Successful. List all games
+                            System.out.println("Available Games\n----------------");
                             List<GameData> gameList = response.getGames();
 
                             int listNum = 1;
@@ -128,36 +131,27 @@ public class Client {
                         String teamColor = splitPostInput[2];
 
                         try {
-                            serverFacade.join(teamColor, gameID);
-                            // Successful. TODO - Print board
+                            JoinGameResponse response = serverFacade.join(teamColor, gameID);
+                            ChessBoard board = response.game.getBoard();
+                            board.resetBoard();
+                            System.out.println(board.toString(teamColor));
                             isPlayer = true;
                             userState = 2;
                         } catch (Exception e){
-                            System.out.println("Failed to join. This game is full, or the team color you specified is taken. Please type 'help' for a list of commands.");
-                        }
-                    }
-                    // join as observer
-                    else if (splitPostInput[0].equals("join") && splitPostInput.length == 2) {
-                        int gameID = Integer.parseInt(splitPostInput[1]);
-
-                        try {
-                            serverFacade.join(null, gameID);
-                            // Successful. TODO - Print board
-                            userState = 2;
-                        } catch (Exception e){
-                            System.out.println("Failed to observe. Please type 'help' for a list of commands.");
+                            System.out.println("Failed to join. Be sure you picked a valid Game ID. The game could be full, or the team color you specified is taken. Please type 'help' for a list of commands.");
                         }
                     }
                     // observe
-                    else if (splitPostInput[0].equals("observe") && splitPostInput.length == 2) {
+                    else if ((splitPostInput[0].equals("observe") && splitPostInput.length == 2) || (splitPostInput[0].equals("join") && splitPostInput.length == 2)) {
                         int gameID = Integer.parseInt(splitPostInput[1]);
 
                         try {
-                            serverFacade.join(null, gameID);
-                            // Successful. TODO - Print board
+                            JoinGameResponse response =  serverFacade.join(null, gameID);
+                            ChessBoard board = response.game.getBoard();
+                            System.out.println(board.toString("WHITE"));
                             userState = 2;
                         } catch (Exception e){
-                            System.out.println("Failed to observe.");
+                            System.out.println("Failed to observe. Please type 'help' for a list of commands.");
                         }
                     }
                     // logout
@@ -195,7 +189,13 @@ public class Client {
 
                 // In a game
                 case 2:
-                    System.out.println("Successfully entered gameplay.");
+                    String gameInput = userInput.nextLine();
+                    String[] splitGameInput = gameInput.split("\\s+");
+
+                    if (splitGameInput[0].equals("quit")) {
+                        System.out.println("Exiting... Goodbye!");
+                        return;
+                    }
                     break;
 
                 // Error encountered. Exit the program
