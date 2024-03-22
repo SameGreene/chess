@@ -138,7 +138,7 @@ public class ChessBoard implements Cloneable{
                     case QUEEN: pieceChar = 'Q'; break;
                     default: pieceChar = ' '; break;
                 }
-                sb.append(bg).append(color).append(String.format("%2s", pieceChar)).append(reset);
+                sb.append(bg).append(color).append(String.format("%2c", pieceChar)).append(reset);
             }
         }
         sb.append(black).append(" ").append(String.format("%2d", i + 1)).append(reset).append("\n");

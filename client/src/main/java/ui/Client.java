@@ -120,6 +120,7 @@ public class Client {
                                        blueColor + game.gameName() + defaultColor + " | White Player - " + blueColor +
                                         game.whiteUsername() + defaultColor + " | Black Player - " + blueColor + game.blackUsername() +
                                         defaultColor + " |");
+                                listNum++;
                             }
                         } catch (Exception e) {
                             System.out.println("Couldn't retrieve list of games. Please type 'help' for a list of commands.");
