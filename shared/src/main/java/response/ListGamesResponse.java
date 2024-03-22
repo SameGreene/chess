@@ -15,4 +15,12 @@ public class ListGamesResponse {
         this.message = message;
         this.status = status;
     }
+
+    public List<GameData> getGames() {
+        return games;
+    }
+
+    public void setGames(List<GameData> games) {
+        this.games = games;
+    }
 }

@@ -1,7 +1,12 @@
 package ui;
 
+import model.GameData;
+import response.ListGamesResponse;
+
 import javax.swing.tree.AbstractLayoutCache;
+import java.awt.*;
 import java.util.Scanner;
+import java.util.List;
 
 public class Client {
 
@@ -15,6 +20,9 @@ public class Client {
         // 1 - POST-LOGIN
         // 2 - GAMEPLAY
         int userState = 0;
+
+        // Player vs Observer
+        boolean isPlayer = false;
 
         // User input Scanner
         Scanner userInput = new Scanner(System.in);
@@ -42,7 +50,7 @@ public class Client {
                             System.out.println("Type 'help' for a list of available options.");
                             userState = 1;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            System.out.println("Failed to register. Be sure you have a unique username.");
                         }
                     }
                     // login
@@ -57,7 +65,7 @@ public class Client {
                             System.out.println("Type 'help' for a list of available options.");
                             userState = 1;
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            System.out.println("Failed to log in. Check your credentials and try again.");
                         }
                     }
                     // quit
@@ -91,32 +99,78 @@ public class Client {
                             // Successful. Print success message
                             System.out.println("Successfully created game " + blueColor + gameName + defaultColor);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            System.out.println("Failed to create game. Be sure you gave the game a unique name. Please type 'help' for a list of commands.");
                         }
                     }
                     // list
                     else if (splitPostInput[0].equals("list")) {
-                        // TODO - Handle list request
+                        try {
+                            ListGamesResponse response = serverFacade.list();
+                            // Successful. TODO - List all games
+                            System.out.println("Available Games\n----------");
+                            List<GameData> gameList = response.getGames();
+
+                            int listNum = 1;
+                            for (GameData game : gameList) {
+
+                                System.out.println(listNum + ". Game ID - " + blueColor + game.gameID() + defaultColor + " | Game Name - " +
+                                       blueColor + game.gameName() + defaultColor + " | White Player - " + blueColor +
+                                        game.whiteUsername() + defaultColor + " | Black Player - " + blueColor + game.blackUsername() +
+                                        defaultColor + " |");
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Couldn't retrieve list of games. Please type 'help' for a list of commands.");
+                        }
                     }
-                    // join
+                    // join with team color
                     else if (splitPostInput[0].equals("join") && splitPostInput.length == 3) {
-                        // TODO - Handle join request
-                        String gameID = splitPostInput[1];
+                        int gameID = Integer.parseInt(splitPostInput[1]);
                         String teamColor = splitPostInput[2];
+
+                        try {
+                            serverFacade.join(teamColor, gameID);
+                            // Successful. TODO - Print board
+                            isPlayer = true;
+                            userState = 2;
+                        } catch (Exception e){
+                            System.out.println("Failed to join. This game is full, or the team color you specified is taken. Please type 'help' for a list of commands.");
+                        }
+                    }
+                    // join as observer
+                    else if (splitPostInput[0].equals("join") && splitPostInput.length == 2) {
+                        int gameID = Integer.parseInt(splitPostInput[1]);
+
+                        try {
+                            serverFacade.join(null, gameID);
+                            // Successful. TODO - Print board
+                            userState = 2;
+                        } catch (Exception e){
+                            System.out.println("Failed to observe. Please type 'help' for a list of commands.");
+                        }
                     }
                     // observe
                     else if (splitPostInput[0].equals("observe") && splitPostInput.length == 2) {
-                        // TODO - Handle observe request
-                        String gameID = splitPostInput[1];
+                        int gameID = Integer.parseInt(splitPostInput[1]);
+
+                        try {
+                            serverFacade.join(null, gameID);
+                            // Successful. TODO - Print board
+                            userState = 2;
+                        } catch (Exception e){
+                            System.out.println("Failed to observe.");
+                        }
                     }
                     // logout
                     else if (splitPostInput[0].equals("logout")) {
-                        // TODO - Handle logout request
-
-                        // Successful. Print success message and move to pre stage
-                        System.out.println("Successfully logged out.");
-                        System.out.println("Type 'help' to get started.");
-                        userState = 0;
+                        try {
+                            serverFacade.logout();
+                            // Successful. Print success message and move to pre stage
+                            System.out.println("Successfully logged out.");
+                            System.out.println("Type 'help' to get started.");
+                            userState = 0;
+                        } catch (Exception e){
+                            System.out.println("Failed to log out. Please type 'help' for a list of commands.");
+                        }
                     }
                     // quit
                     else if (splitPostInput[0].equals("quit")) {
@@ -135,12 +189,13 @@ public class Client {
                     }
                     // error handling
                     else {
-                        System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands");
+                        System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands.");
                     }
                     break;
 
                 // In a game
                 case 2:
+                    System.out.println("Successfully entered gameplay.");
                     break;
 
                 // Error encountered. Exit the program

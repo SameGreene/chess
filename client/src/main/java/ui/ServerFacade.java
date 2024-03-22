@@ -11,6 +11,7 @@ import response.*;
 public class ServerFacade {
     private final String serverUrl;
     private String authToken;
+    private int gameID;
 
     public ServerFacade(String url, int port) {
         serverUrl = url + ":" + port;
@@ -56,7 +57,8 @@ public class ServerFacade {
     public JoinGameResponse join(String playerColor, int gameID) throws Exception {
         var path = "/game";
         JoinGameRequest joinGameRequest = new JoinGameRequest(playerColor, gameID);
-        return this.makeRequest("PUT", path, joinGameRequest, JoinGameResponse.class, authToken);
+        JoinGameResponse joinGameResponse = this.makeRequest("PUT", path, joinGameRequest, JoinGameResponse.class, authToken);
+        return  joinGameResponse;
     }
 
     private <T> T makeRequest(String method, String path, Object request, Class<T> responseClass, String authToken) throws Exception {

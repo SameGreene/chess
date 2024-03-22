@@ -96,24 +96,43 @@ public class ChessBoard implements Cloneable{
 
     @Override
     public String toString() {
-        String retString = "";
+        StringBuilder sb = new StringBuilder();
+        String reset = "\u001B[0m";
+        String black = "\u001B[30m";
+        String red = "\u001B[31m";
+        String blue = "\u001B[34m";
+        String bgWhite = "\u001B[47m";
+        String bgBlack = "\u001B[40m";
 
-        for(int i = 0; i < 8; i++){
-            for(int j = 0; j < 8; j++){
+        sb.append(black).append("  a b c d e f g h").append(reset).append("\n");
+
+        for (int i = 7; i >= 0; i--) {
+            sb.append(black).append(i + 1).append(" ");
+            for (int j = 0; j < 8; j++) {
+                String bg = ((i + j) % 2 == 0) ? bgWhite : bgBlack;
                 if (board[i][j] == null) {
-                    continue;
-                }
-                else{
-                    retString += "Ty - ";
-                    retString += board[i][j].getPieceType();
-                    retString += " Co - ";
-                    retString += board[i][j].getTeamColor();
-                    retString += " ";
+                    sb.append(bg).append(" ").append(reset);
+                } else {
+                    String color = (board[i][j].getTeamColor() == ChessGame.TeamColor.WHITE) ? red : blue;
+                    char pieceChar;
+                    switch (board[i][j].getPieceType()) {
+                        case PAWN: pieceChar = 'P'; break;
+                        case ROOK: pieceChar = 'R'; break;
+                        case KNIGHT: pieceChar = 'N'; break;
+                        case BISHOP: pieceChar = 'B'; break;
+                        case KING: pieceChar = 'K'; break;
+                        case QUEEN: pieceChar = 'Q'; break;
+                        default: pieceChar = ' '; break;
+                    }
+                    sb.append(bg).append(color).append(pieceChar).append(reset);
                 }
             }
+            sb.append(black).append(" ").append(i + 1).append(reset).append("\n");
         }
 
-        return retString;
+        sb.append(black).append("  a b c d e f g h").append(reset).append("\n");
+
+        return sb.toString();
     }
 
     @Override
