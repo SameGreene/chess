@@ -149,6 +149,7 @@ public class Client {
                         try {
                             JoinGameResponse response =  serverFacade.join(null, gameID);
                             ChessBoard board = response.game.getBoard();
+                            board.resetBoard();
                             System.out.println(board.toString("WHITE"));
                             userState = 2;
                         } catch (Exception e){
