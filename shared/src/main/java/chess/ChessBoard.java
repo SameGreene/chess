@@ -103,7 +103,7 @@ public class ChessBoard implements Cloneable{
         String bgWhite = "\u001B[47m";
         String bgBlack = "\u001B[40m";
 
-        sb.append(black).append(String.format("%3s", " ")).append("a b c d e f g h").append(reset).append("\n");
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
 
         if (teamColor.equals("WHITE")) {
             for (int i = 7; i >= 0; i--) {
@@ -115,7 +115,7 @@ public class ChessBoard implements Cloneable{
             }
         }
 
-        sb.append(black).append(String.format("%3s", " ")).append("a b c d e f g h").append(reset).append("\n");
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
 
         return sb.toString();
     }
@@ -125,7 +125,7 @@ public class ChessBoard implements Cloneable{
         for (int j = 0; j < 8; j++) {
             String bg = ((i + j) % 2 == 0) ? bgWhite : bgBlack;
             if (board[i][j] == null) {
-                sb.append(bg).append(String.format("%2s", " ")).append(reset);
+                sb.append(bg).append(String.format("%3s", " ")).append(reset); // Increased space for empty squares
             } else {
                 String color = (board[i][j].getTeamColor() == ChessGame.TeamColor.WHITE) ? red : blue;
                 char pieceChar;
@@ -138,7 +138,7 @@ public class ChessBoard implements Cloneable{
                     case QUEEN: pieceChar = 'Q'; break;
                     default: pieceChar = ' '; break;
                 }
-                sb.append(bg).append(color).append(String.format("%2c", pieceChar)).append(reset);
+                sb.append(bg).append(color).append(" ").append(pieceChar).append(" ").append(reset); // Added a space before and after each piece
             }
         }
         sb.append(black).append(" ").append(String.format("%2d", i + 1)).append(reset).append("\n");
