@@ -20,9 +20,10 @@ public class Client {
 
     public static WebSocketFacade webSocketFacade;
     public static ServerFacade serverFacade;
+    public static NotificationHandler notificationHandler;
 
     public Client(String[] args) throws Exception {
-        webSocketFacade = new WebSocketFacade("http://localhost", this);
+//        webSocketFacade = new WebSocketFacade("http://localhost", );
         serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
     }
 

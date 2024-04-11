@@ -8,6 +8,7 @@ public interface AuthDAO {
     void removeAuth(AuthData authData);
     AuthData getAuthByID(int index);
     model.AuthData getAuth(String username);
+    String getUser(String authToken);
     int getSize();
     void clearAuthList();
 }

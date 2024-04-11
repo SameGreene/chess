@@ -3,6 +3,7 @@ package server;
 import dataAccess.*;
 import handler.*;
 import spark.*;
+import websocket.WebSocketHandler;
 
 public class Server {
 
@@ -20,6 +21,9 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        // Establish WebSocket
+        Spark.webSocket("/connect", WebSocketHandler.class);
 
         try {
             DatabaseManager.createDatabase();

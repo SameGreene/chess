@@ -38,6 +38,19 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     @Override
+    public String getUser(String authToken) {
+        for (int i = 0; i < authList.size(); i = i + 1) {
+            if (authList.get(i).username().equals(authToken)){
+                return authList.get(i).username();
+            }
+            else{
+                return null;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public int getSize() {
         return authList.size();
     }

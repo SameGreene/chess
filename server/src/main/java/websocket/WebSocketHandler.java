@@ -2,6 +2,7 @@ package websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataAccess.*;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -14,15 +15,17 @@ import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.UserGameCommand;
 
 import java.io.IOException;
-import java.util.Timer;
 
 
 @WebSocket
 public class WebSocketHandler {
 
     // Text colors for messages
-    String defaultColor = "\u001B[0m";
-    String blueColor = "\u001B[34m";
+    private final String defaultColor = "\u001B[0m";
+    private final String blueColor = "\u001B[34m";
+    public UserDAO userObj = new SQLUserDAO();
+    public AuthDAO authObj = new SQLAuthDAO();
+    public GameDAO gameObj = new SQLGameDAO();
 
     private final ConnectionManager manager = new ConnectionManager();
 
@@ -35,21 +38,23 @@ public class WebSocketHandler {
                 joinGameAsPlayer(joinPlayerCommand.getAuthString(), joinPlayerCommand.getGameID(), joinPlayerCommand.getPlayerColor(), session);
             }
 
-            case MAKE_MOVE -> enter(action.visitorName(), session);
-            case LEAVE -> enter(action.visitorName(), session);
-            case RESIGN -> exit(action.visitorName());
+//            case MAKE_MOVE -> enter(action.visitorName(), session);
+//            case LEAVE -> enter(action.visitorName(), session);
+//            case RESIGN -> exit(action.visitorName());
         }
     }
 
     private void joinGameAsPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor, Session session) throws IOException {
         manager.add(authToken, session);
-        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + defaultColor + "has joined the game.");
+        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                + defaultColor + " has joined the game.");
         manager.broadcast(authToken, joinMessage);
     }
 
     private void joinGameAsObserver(String authToken, int gameID, Session session) throws IOException {
         manager.add(authToken, session);
-        var observeMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + defaultColor + "is now observing.");
+        var observeMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                + defaultColor + " is now observing.");
         manager.broadcast(authToken, observeMessage);
     }
 
