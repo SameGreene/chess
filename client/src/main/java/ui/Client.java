@@ -1,10 +1,15 @@
 package ui;
 
+import chess.ChessGame;
 import model.GameData;
 import chess.ChessBoard;
 import response.CreateGameResponse;
 import response.JoinGameResponse;
 import response.ListGamesResponse;
+import response.LoginResponse;
+import webSocketMessages.serverMessages.Notification;
+import websocket.NotificationHandler;
+import websocket.WebSocketFacade;
 
 import javax.swing.tree.AbstractLayoutCache;
 import java.awt.*;
@@ -13,8 +18,16 @@ import java.util.List;
 
 public class Client {
 
+    public static WebSocketFacade webSocketFacade;
+    public static ServerFacade serverFacade;
+
+    public Client(String[] args) throws Exception {
+        webSocketFacade = new WebSocketFacade("http://localhost", this);
+        serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
+    }
+
     public static void main(String[] args) throws Exception {
-        ServerFacade serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
+        Client client = new Client(args);
         // Print out welcome screen
         System.out.println("Welcome to CS 240 Chess\nType 'help' to get started");
 
@@ -47,7 +60,7 @@ public class Client {
                         String email = splitPreInput[3];
 
                         try {
-                            serverFacade.register(username, password, email);
+                            client.serverFacade.register(username, password, email);
                             // Successful. Print success message and move to post state
                             System.out.println("Logged in as " + blueColor + username + defaultColor);
                             System.out.println("Type 'help' for a list of available options.");
@@ -62,7 +75,7 @@ public class Client {
                         String password = splitPreInput[2];
 
                         try {
-                            serverFacade.login(username, password);
+                            LoginResponse response = client.serverFacade.login(username, password);
                             // Successful. Print success message and move to post state
                             System.out.println("Logged in as " + blueColor + username + defaultColor);
                             System.out.println("Type 'help' for a list of available options.");
@@ -98,7 +111,7 @@ public class Client {
                         String gameName = splitPostInput[1];
 
                         try {
-                            CreateGameResponse response = serverFacade.create(gameName);
+                            CreateGameResponse response = client.serverFacade.create(gameName);
                             // Successful. Print success message
                             System.out.println("Successfully created game " + blueColor + gameName + defaultColor);
                         } catch (Exception e) {
@@ -108,7 +121,7 @@ public class Client {
                     // list
                     else if (splitPostInput[0].equals("list")) {
                         try {
-                            ListGamesResponse response = serverFacade.list();
+                            ListGamesResponse response = client.serverFacade.list();
                             // Successful. List all games
                             System.out.println("Available Games\n----------------");
                             List<GameData> gameList = response.getGames();
@@ -132,7 +145,9 @@ public class Client {
                         String teamColor = splitPostInput[2];
 
                         try {
-                            JoinGameResponse response = serverFacade.join(teamColor, gameID);
+                            JoinGameResponse response = client.serverFacade.join(teamColor, gameID);
+                            ChessGame.TeamColor teamColorType = ChessGame.TeamColor.valueOf(teamColor.toUpperCase());
+                            client.webSocketFacade.joinGameAsPlayer(serverFacade.getAuthToken(), gameID, teamColorType);
                             ChessBoard board = response.game.getBoard();
                             board.resetBoard();
                             System.out.println(board.toString(teamColor));
@@ -147,7 +162,8 @@ public class Client {
                         int gameID = Integer.parseInt(splitPostInput[1]);
 
                         try {
-                            JoinGameResponse response =  serverFacade.join(null, gameID);
+                            JoinGameResponse response =  client.serverFacade.join(null, gameID);
+                            client.webSocketFacade.joinGameAsObserver(serverFacade.getAuthToken(), gameID);
                             ChessBoard board = response.game.getBoard();
                             board.resetBoard();
                             System.out.println(board.toString("WHITE"));
@@ -159,7 +175,7 @@ public class Client {
                     // logout
                     else if (splitPostInput[0].equals("logout")) {
                         try {
-                            serverFacade.logout();
+                            client.serverFacade.logout();
                             // Successful. Print success message and move to pre stage
                             System.out.println("Successfully logged out.");
                             System.out.println("Type 'help' to get started.");
@@ -194,9 +210,41 @@ public class Client {
                     String gameInput = userInput.nextLine();
                     String[] splitGameInput = gameInput.split("\\s+");
 
-                    if (splitGameInput[0].equals("quit")) {
-                        System.out.println("Exiting... Goodbye!");
-                        return;
+                    // redraw
+                    if (splitGameInput[0].equals("redraw")) {
+
+                    }
+                    // leave
+                    else if (splitGameInput[0].equals("leave")) {
+//                        System.out.println("Exiting... Goodbye!");
+//                        return;
+                    }
+                    // move
+                    else if (splitGameInput[0].equals("move")){
+                        // Translate input from commandline into a ChessMove
+
+                    }
+                    // resign
+                    else if (splitGameInput[0].equals("resign")){
+
+                    }
+                    // highlight
+                    else if (splitGameInput[0].equals("resign")){
+
+                    }
+                    // help
+                    else if (splitGameInput[0].equals("help")) {
+                        System.out.println("redraw" + blueColor + " - Redraw the board in its current state" + defaultColor);
+                        System.out.println("leave" + blueColor + " - Leave the current match" + defaultColor);
+                        System.out.println("move <FROM_HERE> <TO_HERE>" + blueColor + " - Move a piece" + defaultColor);
+                        System.out.println("resign" + blueColor + " - Admit defeat" + defaultColor);
+                        System.out.println("highlight" + blueColor + " - Highlight all possible moves" + defaultColor);
+                        System.out.println("help" + blueColor + " - List available commands" + defaultColor);
+                    }
+
+                    // error handling
+                    else {
+                        System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands.");
                     }
                     break;
 

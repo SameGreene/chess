@@ -13,6 +13,10 @@ public class ServerFacade {
     private String authToken;
     private int gameID;
 
+    public String getAuthToken(){
+        return authToken;
+    }
+
     public ServerFacade(String url, int port) {
         serverUrl = url + ":" + port;
     }
