@@ -48,14 +48,22 @@ public class WebSocketHandler {
                 MakeMove makeMoveCommand = new Gson().fromJson(message, MakeMove.class);
                 makeMove(makeMoveCommand.getAuthString(), makeMoveCommand.getGameID(), makeMoveCommand.getMove());
             }
-
             case RESIGN -> {
                 Resign resignCommand = new Gson().fromJson(message, Resign.class);
                 resign(resignCommand.getAuthString(), resignCommand.getGameID());
             }
-//            case LEAVE -> enter(action.visitorName(), session);
-//            case RESIGN -> exit(action.visitorName());
+            case LEAVE -> {
+                Leave leaveCommand = new Gson().fromJson(message, Leave.class);
+                leave(leaveCommand.getAuthString(), leaveCommand.getGameID(), session);
+            }
         }
+    }
+
+    private void leave(String authToken, int gameID, Session session) throws IOException {
+        var leaveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                + defaultColor + " has left the game.");
+        manager.broadcastAllButOne(leaveMessage, gameID, authToken);
+        manager.remove(session);
     }
 
     private void resign(String authToken, int gameID) throws IOException {

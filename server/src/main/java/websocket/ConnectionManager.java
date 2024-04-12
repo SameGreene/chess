@@ -18,11 +18,11 @@ public class ConnectionManager {
         connections.get(gameID).add(connection);
     }
 
-//    public void remove(Session session) {
-//        connections.forEach((gameID, connections) -> {
-//            connections.removeIf(c -> c.session.equals(session));
-//        });
-//    }
+    public void remove(Session session) {
+        connections.forEach((gameID, connections) -> {
+            connections.removeIf(c -> c.session.equals(session));
+        });
+    }
 
     public void broadcastAll(ServerMessage serverMessage, int gameID) throws IOException {
         for (var c : connections.get(gameID)) {
