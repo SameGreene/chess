@@ -67,13 +67,26 @@ public class WebSocketHandler {
             game = gameData.game();
         }
 
-        // Set gameOver flag of the game and update it in the DAO
-        game.setGameOver(true);
-        gameObj.setGame(gameID - 1, gameData);
+        // Is the game over?
+        if (gameData.game().isGameOver()) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The game is already over.");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+        }
+        else {
+            // Is the player resigning a valid player?
+            if (authObj.getUser(authToken).equals(gameData.whiteUsername()) || authObj.getUser(authToken).equals(gameData.blackUsername())) {
+                // Set gameOver flag of the game and update it in the DAO
+                game.setGameOver(true);
+                gameObj.setGame(gameID - 1, gameData);
 
-        var resignMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                + defaultColor + " has resigned.");
-        manager.broadcastAll(resignMessage, gameID);
+                var resignMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                        + defaultColor + " has resigned.");
+                manager.broadcastAll(resignMessage, gameID);
+            } else {
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The observer cannot resign.");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
+        }
     }
 
     private void makeMove(String authToken, int gameID, ChessMove moveToMake) throws IOException, InvalidMoveException {
@@ -85,8 +98,13 @@ public class WebSocketHandler {
             game = gameData.game();
         }
 
+        // Is the game over?
+        if (gameData.game().isGameOver()) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The game is already over.");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+        }
         // Are we in checkmate?
-        if (gameData.game().isInCheckmate(ChessGame.TeamColor.WHITE) || gameData.game().isInCheckmate(ChessGame.TeamColor.BLACK)) {
+        else if (gameData.game().isInCheckmate(ChessGame.TeamColor.WHITE) || gameData.game().isInCheckmate(ChessGame.TeamColor.BLACK)) {
             var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Game over.");
             manager.broadcastUser(errorMessage, gameID, authToken);
             // Set gameOver flag of the game and update it in the DAO
