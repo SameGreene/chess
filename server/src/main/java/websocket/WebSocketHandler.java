@@ -51,16 +51,14 @@ public class WebSocketHandler {
             }
             case MAKE_MOVE -> {
                 MakeMove makeMoveCommand = new Gson().fromJson(message, MakeMove.class);
-                makeMove(makeMoveCommand.getAuthString(), makeMoveCommand.getGameID(), session, makeMoveCommand.getMove());
+                makeMove(makeMoveCommand.getAuthString(), makeMoveCommand.getGameID(), makeMoveCommand.getMove());
             }
-
-//            case MAKE_MOVE -> enter(action.visitorName(), session);
 //            case LEAVE -> enter(action.visitorName(), session);
 //            case RESIGN -> exit(action.visitorName());
         }
     }
 
-    private void makeMove(String authToken, int gameID, Session session, ChessMove moveToMake) throws IOException, InvalidMoveException {
+    private void makeMove(String authToken, int gameID, ChessMove moveToMake) throws IOException, InvalidMoveException {
         // Perform checks
         authCheck(authToken, gameID);
         GameData gameData = gameObj.getGame(gameID - 1);
@@ -69,26 +67,34 @@ public class WebSocketHandler {
             game = gameData.game();
         }
 
-        // Is the move valid?
-        Collection <ChessMove> validMoves = game.validMoves(moveToMake.getStartPosition());
-        if (validMoves != null && validMoves.contains(moveToMake)) {
-            // Make the move
-            game.makeMove(moveToMake);
-            // Load the game for everyone
-            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
-            manager.broadcastAll(loadGameMessage, gameID);
-            // Notify everyone else that a move was made by the player
-            var moveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                    + defaultColor + " has made a move.");
-            manager.broadcastAllButOne(moveMessage, gameID, authToken);
+        String currentUser = authObj.getUser(authToken);
+        // Is it the player's turn?
+        if (game.getTeamTurn() != null && ((game.getTeamTurn() == ChessGame.TeamColor.BLACK && gameData.blackUsername().equals(currentUser)) ||
+                (game.getTeamTurn() == ChessGame.TeamColor.WHITE && gameData.whiteUsername().equals(currentUser)))) {
+            // Is the move valid?
+            Collection <ChessMove> validMoves = game.validMoves(moveToMake.getStartPosition());
+            if (validMoves != null && validMoves.contains(moveToMake)) {
+                // Make the move
+                game.makeMove(moveToMake);
+                // Load the game for everyone
+                var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                manager.broadcastAll(loadGameMessage, gameID);
+                // Notify everyone else that a move was made by the player
+                var moveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                        + defaultColor + " has made a move.");
+                manager.broadcastAllButOne(moveMessage, gameID, authToken);
+            }
+            else {
+                // Move can't be made. Notify user of invalid move.
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Invalid move");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
         }
         else {
-            // Move can't be made. Notify user of invalid move.
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Invalid move");
+            // Not the player's turn
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "It's not your turn.");
             manager.broadcastUser(errorMessage, gameID, authToken);
         }
-
-
     }
 
     private void joinGameAsPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor, Session session) throws IOException {
