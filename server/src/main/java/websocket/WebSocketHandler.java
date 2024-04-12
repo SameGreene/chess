@@ -11,7 +11,6 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -48,10 +47,10 @@ public class WebSocketHandler {
     private void joinGameAsPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor, Session session) throws IOException {
         manager.add(authToken, session, gameID);
         // Send back a load game message with a game inside it to the user who just joined
-        ChessGame myGame = gameObj.getGame(gameID-1).game();
-        if (myGame != null) {
-            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, myGame);
-            manager.broadcastAll(loadGameMessage, gameID);
+        ChessGame game = gameObj.getGame(gameID-1).game();
+        if (game != null) {
+            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            manager.broadcastUser(loadGameMessage, gameID, authToken);
         }
         else {
             // Print error message
@@ -59,8 +58,8 @@ public class WebSocketHandler {
         }
 
         // Notify everyone else that the player has joined
-        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                + defaultColor + " has joined the game.");
+//        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+//                + defaultColor + " has joined the game.");
 //        manager.broadcastAll(joinMessage, gameID);
     }
 

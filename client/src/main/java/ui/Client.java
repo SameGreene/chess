@@ -261,19 +261,19 @@ public class Client implements NotificationHandler {
     }
 
     @Override
-    public void notify(String message) {
-        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+    public void notify(String game) {
+        ServerMessage serverMessage = new Gson().fromJson(game, ServerMessage.class);
         switch (serverMessage.getServerMessageType()) {
             case LOAD_GAME -> {
-                LoadGame loadGameMessage = new Gson().fromJson(message, LoadGame.class);
+                LoadGame loadGameMessage = new Gson().fromJson(game, LoadGame.class);
                 // Load game
             }
             case NOTIFICATION -> {
-                Notification notification = new Gson().fromJson(message, Notification.class);
+                Notification notification = new Gson().fromJson(game, Notification.class);
                 // Notify
             }
             case ERROR -> {
-                Error errorMessage = new Gson().fromJson(message, Error.class);
+                Error errorMessage = new Gson().fromJson(game, Error.class);
                 // Error
             }
         }
