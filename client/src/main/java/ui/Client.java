@@ -52,6 +52,9 @@ public class Client implements NotificationHandler {
         String defaultColor = "\u001B[0m";
         String blueColor = "\u001B[34m";
 
+        ChessBoard board = null;
+        String teamColor = null;
+
         while (true) {
             switch (userState) {
                 // Not logged in
@@ -147,18 +150,22 @@ public class Client implements NotificationHandler {
                     // join with team color
                     else if (splitPostInput[0].equals("join") && splitPostInput.length == 3) {
                         int gameID = Integer.parseInt(splitPostInput[1]);
-                        String teamColor = splitPostInput[2];
+                        teamColor = splitPostInput[2];
 
                         try {
                             JoinGameResponse response = client.serverFacade.join(teamColor, gameID);
                             ChessGame.TeamColor teamColorType = ChessGame.TeamColor.valueOf(teamColor.toUpperCase());
-                            client.webSocketFacade.joinGameAsPlayer(serverFacade.getAuthToken(), gameID, teamColorType);
-                            ChessBoard board = response.game.getBoard();
-                            System.out.println(board.toString(teamColor));
-                            isPlayer = true;
-                            userState = 2;
+                            try {
+                                client.webSocketFacade.joinGameAsPlayer(serverFacade.getAuthToken(), gameID, teamColorType);
+                                board = response.game.getBoard();
+                                System.out.println(board.toString(teamColor));
+                                isPlayer = true;
+                                userState = 2;
+                            } catch (Exception e){
+                                System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");
+                            }
                         } catch (Exception e){
-                            System.out.println("Failed to join. Be sure you picked a valid Game ID. The game could be full, or the team color you specified is taken. Please type 'help' for a list of commands.");
+                            System.out.println("HTTP request failed. Please type 'help' for a list of commands.");
                         }
                     }
                     // observe
@@ -168,7 +175,7 @@ public class Client implements NotificationHandler {
                         try {
                             JoinGameResponse response =  client.serverFacade.join(null, gameID);
                             client.webSocketFacade.joinGameAsObserver(serverFacade.getAuthToken(), gameID);
-                            ChessBoard board = response.game.getBoard();
+                            board = response.game.getBoard();
                             board.resetBoard();
                             System.out.println(board.toString("WHITE"));
                             userState = 2;
@@ -216,7 +223,7 @@ public class Client implements NotificationHandler {
 
                     // redraw
                     if (splitGameInput[0].equals("redraw")) {
-
+                        System.out.println(board.toString(teamColor));
                     }
                     // leave
                     else if (splitGameInput[0].equals("leave")) {
@@ -266,7 +273,6 @@ public class Client implements NotificationHandler {
         switch (serverMessage.getServerMessageType()) {
             case LOAD_GAME -> {
                 LoadGame loadGameMessage = new Gson().fromJson(game, LoadGame.class);
-                System.out.println("Received load game message for");
                 // Load game
             }
             case NOTIFICATION -> {

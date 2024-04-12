@@ -3,11 +3,13 @@ package websocket;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataAccess.*;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
@@ -46,11 +48,26 @@ public class WebSocketHandler {
 
     private void joinGameAsPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor, Session session) throws IOException {
         manager.add(authToken, session, gameID);
-        // Send back a load game message with a game inside it to the user who just joined
+
+        // Check if game exists
+        GameData gameData = gameObj.getGame(gameID - 1);
         ChessGame game = gameObj.getGame(gameID-1).game();
         if (game != null) {
-            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
-            manager.broadcastUser(loadGameMessage, gameID, authToken);
+            // Is the user that is trying to join on the requested team?
+                // If the requesting player is black, and their username matches the blackUsername, good to go
+                // Same for white
+            String reqUser = authObj.getUser(authToken);
+            String whiteUser = gameData.whiteUsername();
+            String blackUser = gameData.blackUsername();
+            if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
+                // Send back a load game message with a game inside it to the user who just joined
+                var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                manager.broadcastUser(loadGameMessage, gameID, authToken);
+            }
+            else {
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
         }
         else {
             // Print error message
