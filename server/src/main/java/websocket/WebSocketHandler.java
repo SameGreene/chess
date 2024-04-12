@@ -1,8 +1,6 @@
 package websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.InvalidMoveException;
+import chess.*;
 import com.google.gson.Gson;
 import dataAccess.*;
 import model.GameData;
@@ -15,10 +13,7 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinObserver;
-import webSocketMessages.userCommands.JoinPlayer;
-import webSocketMessages.userCommands.MakeMove;
-import webSocketMessages.userCommands.UserGameCommand;
+import webSocketMessages.userCommands.*;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -53,9 +48,32 @@ public class WebSocketHandler {
                 MakeMove makeMoveCommand = new Gson().fromJson(message, MakeMove.class);
                 makeMove(makeMoveCommand.getAuthString(), makeMoveCommand.getGameID(), makeMoveCommand.getMove());
             }
+
+            case RESIGN -> {
+                Resign resignCommand = new Gson().fromJson(message, Resign.class);
+                resign(resignCommand.getAuthString(), resignCommand.getGameID());
+            }
 //            case LEAVE -> enter(action.visitorName(), session);
 //            case RESIGN -> exit(action.visitorName());
         }
+    }
+
+    private void resign(String authToken, int gameID) throws IOException {
+        // Perform checks
+        authCheck(authToken, gameID);
+        GameData gameData = gameObj.getGame(gameID - 1);
+        ChessGame game = null;
+        if (gameData != null) {
+            game = gameData.game();
+        }
+
+        // Set gameOver flag of the game and update it in the DAO
+        game.setGameOver(true);
+        gameObj.setGame(gameID - 1, gameData);
+
+        var resignMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                + defaultColor + " has resigned.");
+        manager.broadcastAll(resignMessage, gameID);
     }
 
     private void makeMove(String authToken, int gameID, ChessMove moveToMake) throws IOException, InvalidMoveException {
@@ -67,33 +85,44 @@ public class WebSocketHandler {
             game = gameData.game();
         }
 
-        String currentUser = authObj.getUser(authToken);
-        // Is it the player's turn?
-        if (game.getTeamTurn() != null && ((game.getTeamTurn() == ChessGame.TeamColor.BLACK && gameData.blackUsername().equals(currentUser)) ||
-                (game.getTeamTurn() == ChessGame.TeamColor.WHITE && gameData.whiteUsername().equals(currentUser)))) {
-            // Is the move valid?
-            Collection <ChessMove> validMoves = game.validMoves(moveToMake.getStartPosition());
-            if (validMoves != null && validMoves.contains(moveToMake)) {
-                // Make the move
-                game.makeMove(moveToMake);
-                // Load the game for everyone
-                var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                manager.broadcastAll(loadGameMessage, gameID);
-                // Notify everyone else that a move was made by the player
-                var moveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                        + defaultColor + " has made a move.");
-                manager.broadcastAllButOne(moveMessage, gameID, authToken);
-            }
-            else {
-                // Move can't be made. Notify user of invalid move.
-                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Invalid move");
-                manager.broadcastUser(errorMessage, gameID, authToken);
-            }
+        // Are we in checkmate?
+        if (gameData.game().isInCheckmate(ChessGame.TeamColor.WHITE) || gameData.game().isInCheckmate(ChessGame.TeamColor.BLACK)) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Game over.");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+            // Set gameOver flag of the game and update it in the DAO
+            game.setGameOver(true);
+            gameObj.setGame(gameID - 1, gameData);
         }
         else {
-            // Not the player's turn
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "It's not your turn.");
-            manager.broadcastUser(errorMessage, gameID, authToken);
+            String currentUser = authObj.getUser(authToken);
+            // Is it the player's turn?
+            if (game.getTeamTurn() != null && ((game.getTeamTurn() == ChessGame.TeamColor.BLACK && gameData.blackUsername().equals(currentUser)) ||
+                    (game.getTeamTurn() == ChessGame.TeamColor.WHITE && gameData.whiteUsername().equals(currentUser)))) {
+                // Is the move valid?
+                Collection <ChessMove> validMoves = game.validMoves(moveToMake.getStartPosition());
+                if (validMoves != null && validMoves.contains(moveToMake)) {
+                    // Make the move
+                    game.makeMove(moveToMake);
+                    gameObj.setGame(gameID - 1, gameData);
+                    // Load the game for everyone
+                    var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                    manager.broadcastAll(loadGameMessage, gameID);
+                    // Notify everyone else that a move was made by the player
+                    var moveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                            + defaultColor + " has made a move.");
+                    manager.broadcastAllButOne(moveMessage, gameID, authToken);
+                }
+                else {
+                    // Move can't be made. Notify user of invalid move.
+                    var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Invalid move");
+                    manager.broadcastUser(errorMessage, gameID, authToken);
+                }
+            }
+            else {
+                // Not the player's turn
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "It's not your turn.");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
         }
     }
 
@@ -109,7 +138,7 @@ public class WebSocketHandler {
         }
         gameCheck(authToken, gameID, gameData);
 
-        // Is the user that is trying to join on the requested team?
+        // Is the user that is trying to join on the right team?
         // If the requesting player is black, and their username matches the blackUsername, good to go
         // Same for white
         String reqUser = authObj.getUser(authToken);
@@ -186,9 +215,9 @@ public class WebSocketHandler {
 //        man.broadcast(visitorName, serverMessage);
 //    }
 
-    @OnWebSocketClose
-    public void onClose(Session session, int statusCode, String reason) {
-        manager.remove(session);
-    }
+//    @OnWebSocketClose
+//    public void onClose(Session session, int statusCode, String reason) {
+//        manager.remove(session);
+//    }
 
 }
