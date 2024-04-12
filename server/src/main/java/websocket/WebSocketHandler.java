@@ -13,6 +13,7 @@ import webSocketMessages.serverMessages.Error;
 import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
+import webSocketMessages.userCommands.JoinObserver;
 import webSocketMessages.userCommands.JoinPlayer;
 import webSocketMessages.userCommands.UserGameCommand;
 
@@ -28,6 +29,7 @@ public class WebSocketHandler {
     public UserDAO userObj = new SQLUserDAO();
     public AuthDAO authObj = new SQLAuthDAO();
     public GameDAO gameObj = new SQLGameDAO();
+    private boolean foundAuth;
 
     private final ConnectionManager manager = new ConnectionManager();
 
@@ -39,6 +41,10 @@ public class WebSocketHandler {
                 JoinPlayer joinPlayerCommand = new Gson().fromJson(message, JoinPlayer.class);
                 joinGameAsPlayer(joinPlayerCommand.getAuthString(), joinPlayerCommand.getGameID(), joinPlayerCommand.getPlayerColor(), session);
             }
+            case JOIN_OBSERVER -> {
+                JoinObserver joinObserverCommand = new Gson().fromJson(message, JoinObserver.class);
+                joinGameAsObserver(joinObserverCommand.getAuthString(), joinObserverCommand.getGameID(), session);
+            }
 
 //            case MAKE_MOVE -> enter(action.visitorName(), session);
 //            case LEAVE -> enter(action.visitorName(), session);
@@ -49,45 +55,26 @@ public class WebSocketHandler {
     private void joinGameAsPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor, Session session) throws IOException {
         manager.add(authToken, session, gameID);
 
-        // Check that the provided authToken is in the database
-        boolean foundAuth = false;
-        for (int i = 0; i <= authObj.getSize(); i++){
-            if (authObj.getAuthByID(i) != null && authObj.getAuthByID(i).authToken().equals(authToken)) {
-                foundAuth = true;
-            }
-        }
-
-        if (!foundAuth) {
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Bad AuthToken");
-            manager.broadcastUser(errorMessage, gameID, authToken);
-            return;
-        }
-
-        // Check if game exists
+        authCheck(authToken, gameID);
         GameData gameData = gameObj.getGame(gameID - 1);
+        ChessGame game = null;
         if (gameData != null) {
-            ChessGame game = gameObj.getGame(gameID - 1).game();
-            if (game != null && gameData.gameID() == gameID) {
-                // Is the user that is trying to join on the requested team?
-                // If the requesting player is black, and their username matches the blackUsername, good to go
-                // Same for white
-                String reqUser = authObj.getUser(authToken);
-                String whiteUser = gameData.whiteUsername();
-                String blackUser = gameData.blackUsername();
-                if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
-                    // Send back a load game message with a game inside it to the user who just joined
-                    var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
-                    manager.broadcastUser(loadGameMessage, gameID, authToken);
-                } else {
-                    var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
-                    manager.broadcastUser(errorMessage, gameID, authToken);
-                }
-            } else {
-                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Bad GameID");
-                manager.broadcastUser(errorMessage, gameID, authToken);
-            }
+            game = gameData.game();
+        }
+        gameCheck(authToken, gameID, gameData);
+
+        // Is the user that is trying to join on the requested team?
+        // If the requesting player is black, and their username matches the blackUsername, good to go
+        // Same for white
+        String reqUser = authObj.getUser(authToken);
+        String whiteUser = gameData.whiteUsername();
+        String blackUser = gameData.blackUsername();
+        if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
+            // Send back a load game message with a game inside it to the user who just joined
+            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            manager.broadcastUser(loadGameMessage, gameID, authToken);
         } else {
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Bad GameID");
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
             manager.broadcastUser(errorMessage, gameID, authToken);
         }
 
@@ -99,9 +86,51 @@ public class WebSocketHandler {
 
     private void joinGameAsObserver(String authToken, int gameID, Session session) throws IOException {
         manager.add(authToken, session, gameID);
-        var observeMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                + defaultColor + " is now observing.");
-        manager.broadcastAll(observeMessage, gameID);
+
+        // Check authToken
+        authCheck(authToken, gameID);
+        GameData gameData = gameObj.getGame(gameID - 1);
+        gameCheck(authToken, gameID, gameData);
+
+        if (foundAuth) {
+            var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game());
+            manager.broadcastUser(observeMessage, gameID, authToken);
+
+            var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                    + defaultColor + " has joined the game.");
+            manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        }
+    }
+
+    private void gameCheck(String authToken, int gameID, GameData gameData) throws IOException{
+        ChessGame game = null;
+        if (gameData != null) {
+            game = gameObj.getGame(gameID - 1).game();
+            if (game != null && gameData.gameID() == gameID) {
+
+            } else {
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Bad GameID");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
+        } else {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Bad GameID");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+        }
+    }
+
+    private void authCheck(String authToken, int gameID) throws IOException {
+        // Check that the provided authToken is in the database
+        foundAuth = false;
+        for (int i = 0; i <= authObj.getSize(); i++){
+            if (authObj.getAuthByID(i) != null && authObj.getAuthByID(i).authToken().equals(authToken)) {
+                foundAuth = true;
+            }
+        }
+
+        if (!foundAuth) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "Bad AuthToken");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+        }
     }
 
 //    private void exit(String visitorName) throws IOException {
