@@ -1,13 +1,17 @@
 package ui;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import model.GameData;
 import chess.ChessBoard;
 import response.CreateGameResponse;
 import response.JoinGameResponse;
 import response.ListGamesResponse;
 import response.LoginResponse;
+import webSocketMessages.serverMessages.Error;
+import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
+import webSocketMessages.serverMessages.ServerMessage;
 import websocket.NotificationHandler;
 import websocket.WebSocketFacade;
 
@@ -16,7 +20,7 @@ import java.awt.*;
 import java.util.Scanner;
 import java.util.List;
 
-public class Client {
+public class Client implements NotificationHandler {
 
     public static WebSocketFacade webSocketFacade;
     public static ServerFacade serverFacade;
@@ -150,7 +154,6 @@ public class Client {
                             ChessGame.TeamColor teamColorType = ChessGame.TeamColor.valueOf(teamColor.toUpperCase());
                             client.webSocketFacade.joinGameAsPlayer(serverFacade.getAuthToken(), gameID, teamColorType);
                             ChessBoard board = response.game.getBoard();
-                            board.resetBoard();
                             System.out.println(board.toString(teamColor));
                             isPlayer = true;
                             userState = 2;
@@ -253,6 +256,25 @@ public class Client {
                 default:
                     System.out.println("Unknown state error occurred. Exiting...");
                     return;
+            }
+        }
+    }
+
+    @Override
+    public void notify(String message) {
+        ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
+        switch (serverMessage.getServerMessageType()) {
+            case LOAD_GAME -> {
+                LoadGame loadGameMessage = new Gson().fromJson(message, LoadGame.class);
+                // Load game
+            }
+            case NOTIFICATION -> {
+                Notification notification = new Gson().fromJson(message, Notification.class);
+                // Notify
+            }
+            case ERROR -> {
+                Error errorMessage = new Gson().fromJson(message, Error.class);
+                // Error
             }
         }
     }

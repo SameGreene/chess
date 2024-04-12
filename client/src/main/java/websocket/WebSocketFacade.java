@@ -31,8 +31,7 @@ public class WebSocketFacade extends Endpoint {
             this.session.addMessageHandler(new MessageHandler.Whole<String>() {
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(serverMessage);
+                    notificationHandler.notify(message);
                 }
             });
         } catch (DeploymentException | IOException | URISyntaxException ex) {
@@ -85,6 +84,7 @@ public class WebSocketFacade extends Endpoint {
         try {
             var command = new Resign(authToken, gameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));
+            this.session.close();
         } catch (IOException ex) {
             throw new Exception("ERROR: Failed to resign");
         }

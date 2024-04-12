@@ -8,6 +8,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import webSocketMessages.serverMessages.LoadGame;
 import webSocketMessages.serverMessages.Notification;
 import webSocketMessages.serverMessages.ServerMessage;
 import webSocketMessages.userCommands.JoinObserver;
@@ -45,17 +46,29 @@ public class WebSocketHandler {
     }
 
     private void joinGameAsPlayer(String authToken, int gameID, ChessGame.TeamColor playerColor, Session session) throws IOException {
-        manager.add(authToken, session);
+        manager.add(authToken, session, gameID);
+        // Send back a load game message with a game inside it to the user who just joined
+        ChessGame myGame = gameObj.getGame(gameID-1).game();
+        if (myGame != null) {
+            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, myGame);
+            manager.broadcastAll(loadGameMessage, gameID);
+        }
+        else {
+            // Print error message
+            System.out.println("Error: Game not found");
+        }
+
+        // Notify everyone else that the player has joined
         var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
                 + defaultColor + " has joined the game.");
-        manager.broadcast(authToken, joinMessage);
+//        manager.broadcastAll(joinMessage, gameID);
     }
 
     private void joinGameAsObserver(String authToken, int gameID, Session session) throws IOException {
-        manager.add(authToken, session);
+        manager.add(authToken, session, gameID);
         var observeMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
                 + defaultColor + " is now observing.");
-        manager.broadcast(authToken, observeMessage);
+        manager.broadcastAll(observeMessage, gameID);
     }
 
 //    private void exit(String visitorName) throws IOException {
@@ -64,12 +77,6 @@ public class WebSocketHandler {
 //        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
 //        man.broadcast(visitorName, serverMessage);
 //    }
-
-    @OnWebSocketConnect
-    public void onConnect(Session session) {
-        System.out.println("A client has connected");
-        manager.add("REPLACE_AUTHTOKEN", session);
-    }
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
