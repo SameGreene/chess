@@ -55,12 +55,6 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public void removeUser(int index) {
-        // Not implemented
-        return;
-    }
-
-    @Override
     public UserData getUser(int index) {
         Connection conn = null;
         try {

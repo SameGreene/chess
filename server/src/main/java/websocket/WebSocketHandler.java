@@ -233,17 +233,4 @@ public class WebSocketHandler {
             manager.broadcastUser(errorMessage, gameID, authToken);
         }
     }
-
-//    private void exit(String visitorName) throws IOException {
-//        manager.remove(visitorName);
-//        var message = String.format("%s left the shop", visitorName);
-//        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-//        man.broadcast(visitorName, serverMessage);
-//    }
-
-//    @OnWebSocketClose
-//    public void onClose(Session session, int statusCode, String reason) {
-//        manager.remove(session);
-//    }
-
 }

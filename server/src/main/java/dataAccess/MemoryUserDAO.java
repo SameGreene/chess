@@ -15,11 +15,6 @@ public class MemoryUserDAO implements UserDAO{
         userList.add(newUser);
     }
     @Override
-    public void removeUser(int index) {
-        // Not implemented
-        return;
-    }
-    @Override
     public UserData getUser(int index) {
         return userList.get(index);
     }

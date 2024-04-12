@@ -71,38 +71,6 @@ public class SQLGameDAO implements GameDAO {
     }
 
     @Override
-    public void setCurrentID(int i) {
-        currentID = i;
-    }
-
-    @Override
-    public void removeGame(int index) {
-        Connection conn = null;
-        try {
-            conn = DatabaseManager.getConnection();
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        try (PreparedStatement preparedStatement = conn.prepareStatement("DELETE * FROM games WHERE gameID = (?)")) {
-            preparedStatement.setInt(1, index);
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        try {
-            conn.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public GameData getGame(int index) {
         Connection conn = null;
         try {
@@ -171,11 +139,7 @@ public class SQLGameDAO implements GameDAO {
             preparedStatement.setInt(6, index);
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         }
 
         try {

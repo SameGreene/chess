@@ -23,16 +23,6 @@ public class MemoryGameDAO implements GameDAO {
     }
 
     @Override
-    public void setCurrentID(int i) {
-        currentID = i;
-    }
-
-    @Override
-    public void removeGame(int index) {
-        gameList.remove(index);
-    }
-
-    @Override
     public GameData getGame(int index) {
         return gameList.get(index);
     }

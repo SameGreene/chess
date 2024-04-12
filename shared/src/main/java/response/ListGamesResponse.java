@@ -19,8 +19,4 @@ public class ListGamesResponse {
     public List<GameData> getGames() {
         return games;
     }
-
-    public void setGames(List<GameData> games) {
-        this.games = games;
-    }
 }

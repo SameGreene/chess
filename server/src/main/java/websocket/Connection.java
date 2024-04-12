@@ -20,7 +20,6 @@ public class Connection {
     public void send(ServerMessage msg) throws IOException {
         try {
             session.getRemote().sendString(new Gson().toJson(msg));
-            System.out.println("Message sent to " + authToken  + new Gson().toJson(msg));
         }
         catch (IOException e) {
             System.out.println("Error: Failed to send message");
