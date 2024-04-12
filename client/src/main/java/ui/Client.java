@@ -27,7 +27,7 @@ public class Client implements NotificationHandler {
     public static NotificationHandler notificationHandler;
 
     public Client(String[] args) throws Exception {
-//        webSocketFacade = new WebSocketFacade("http://localhost", );
+        webSocketFacade = new WebSocketFacade("http://localhost:3030", this);
         serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
     }
 
@@ -266,6 +266,7 @@ public class Client implements NotificationHandler {
         switch (serverMessage.getServerMessageType()) {
             case LOAD_GAME -> {
                 LoadGame loadGameMessage = new Gson().fromJson(game, LoadGame.class);
+                System.out.println("Received load game message for");
                 // Load game
             }
             case NOTIFICATION -> {

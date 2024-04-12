@@ -17,7 +17,7 @@ import webSocketMessages.userCommands.UserGameCommand;
 import java.io.IOException;
 
 
-@WebSocket
+@WebSocket (maxIdleTime = 1000000)
 public class WebSocketHandler {
 
     // Text colors for messages
@@ -58,9 +58,9 @@ public class WebSocketHandler {
         }
 
         // Notify everyone else that the player has joined
-//        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-//                + defaultColor + " has joined the game.");
-//        manager.broadcastAll(joinMessage, gameID);
+        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                + defaultColor + " has joined the game.");
+        manager.broadcastAllButOne(joinMessage, gameID, authToken);
     }
 
     private void joinGameAsObserver(String authToken, int gameID, Session session) throws IOException {
@@ -79,7 +79,7 @@ public class WebSocketHandler {
 
     @OnWebSocketClose
     public void onClose(Session session, int statusCode, String reason) {
-        manager.remove("REPLACE_AUTHTOKEN");
+        manager.remove(session);
     }
 
 }

@@ -18,8 +18,10 @@ public class ConnectionManager {
         connections.get(gameID).add(connection);
     }
 
-    public void remove(String authToken) {
-        connections.remove(authToken);
+    public void remove(Session session) {
+        connections.forEach((gameID, connections) -> {
+            connections.removeIf(c -> c.session.equals(session));
+        });
     }
 
     public void broadcastAll(ServerMessage serverMessage, int gameID) throws IOException {
@@ -40,7 +42,7 @@ public class ConnectionManager {
 
     public void broadcastAllButOne(ServerMessage serverMessage, int gameID, String excludeAuthToken) throws IOException {
         for (var c : connections.get(gameID)) {
-            if (c.session.isOpen() && c.authToken != excludeAuthToken) {
+            if (c.session.isOpen() && !c.authToken.equals(excludeAuthToken)) {
                 c.send(serverMessage);
             }
         }
