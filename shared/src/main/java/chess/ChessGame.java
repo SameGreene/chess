@@ -18,6 +18,7 @@ public class ChessGame implements Cloneable {
     public ChessGame() {
         this.chessBoard = new ChessBoard();
         this.chessBoard.resetBoard();
+        this.currentTurn = TeamColor.WHITE;
     }
 
     /**
@@ -67,7 +68,7 @@ public class ChessGame implements Cloneable {
             ChessPosition endPos = move.getEndPosition();
             ChessPosition startPos = move.getStartPosition();
 
-            if (this.chessBoard.getPiece(endPos) == null || (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currentTurn)) {
+            if (this.chessBoard.getPiece(endPos) == null || (this.chessBoard.getPiece(endPos) != null && this.chessBoard.getPiece(endPos).getTeamColor() != currPiece.getTeamColor())) {
                 // Create alternate universe game to see if move will put us into check
                 ChessGame altGame = this.clone();
                 altGame.chessBoard.addPiece(endPos, currPiece);
