@@ -81,20 +81,19 @@ public class SQLUserDAO implements UserDAO {
                 }
             }
         } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException();
         }
+        tryClosing(conn);
 
+        return null;
+    }
+
+    private void tryClosing(Connection conn) {
         try {
             conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     @Override

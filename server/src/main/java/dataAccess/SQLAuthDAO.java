@@ -117,18 +117,9 @@ public class SQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        try {
-            conn.close();
-        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        tryClosing(conn);
 
         return null;
     }
@@ -158,18 +149,9 @@ public class SQLAuthDAO implements AuthDAO {
                 }
             }
         } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        try {
-            conn.close();
-        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        tryClosing(conn);
 
         return null;
     }
@@ -191,11 +173,7 @@ public class SQLAuthDAO implements AuthDAO {
         try (PreparedStatement preparedStatement = conn.prepareStatement("TRUNCATE TABLE auth")) {
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            try {
-                throw new DataAccessException(e.getMessage());
-            } catch (DataAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            throw new RuntimeException(e);
         }
 
         try {
