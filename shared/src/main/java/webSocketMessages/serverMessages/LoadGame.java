@@ -29,6 +29,10 @@ public class LoadGame extends ServerMessage{
         return chessGame.getBoard();
     }
 
+    public ChessGame getChessGame() {
+        return chessGame;
+    }
+
     public String getGame(String teamColor) {
         if (teamColor == null) {
             return chessGame.getBoard().toString("WHITE");

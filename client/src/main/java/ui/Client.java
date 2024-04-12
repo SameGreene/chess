@@ -19,6 +19,8 @@ import websocket.WebSocketFacade;
 
 import javax.swing.tree.AbstractLayoutCache;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Scanner;
 import java.util.List;
 
@@ -40,6 +42,7 @@ public class Client implements NotificationHandler {
     private static ChessBoard board = null;
     private static String teamColor = null;
     private static int gameID;
+    private static ChessGame chessGame;
 
     // STATES
     // 0 - PRE-LOGIN
@@ -116,9 +119,9 @@ public class Client implements NotificationHandler {
         else if (splitGameInput[0].equals("move")){
             // Translate input from commandline into a ChessMove
             String from = splitGameInput[1];
-            ChessPosition fromPos = new ChessPosition(from.charAt(0) - 'a', from.charAt(1) - '1');
+            ChessPosition fromPos = new ChessPosition(from.charAt(0) - 'a' + 1, from.charAt(1) - '0');
             String to = splitGameInput[2];
-            ChessPosition toPos = new ChessPosition(to.charAt(0) - 'a', to.charAt(1) - '1');
+            ChessPosition toPos = new ChessPosition(to.charAt(0) - 'a' + 1, to.charAt(1) - '0');
 
             try {
                 client.webSocketFacade.makeMove(serverFacade.getAuthToken(), gameID, new ChessMove(fromPos, toPos, null));
@@ -137,6 +140,13 @@ public class Client implements NotificationHandler {
         // highlight
         else if (splitGameInput[0].equals("highlight")){
             // Highlight all possible moves given a piece
+                // Local. No server interaction needed
+            String pieceToCheck = splitGameInput[1];
+            ChessPosition piecePos = new ChessPosition(pieceToCheck.charAt(0) - 'a' + 1, pieceToCheck.charAt(1) - '0');
+            Collection<ChessMove> possibleMoves = chessGame.validMoves(piecePos);
+            ChessBoard highlightedBoard = board;
+
+            System.out.println(highlightedBoard.toStringHighlighted("WHITE", possibleMoves));
         }
         // help
         else if (splitGameInput[0].equals("help")) {
@@ -302,6 +312,7 @@ public class Client implements NotificationHandler {
             case LOAD_GAME -> {
                 LoadGame loadGameMessage = new Gson().fromJson(game, LoadGame.class);
                 board = loadGameMessage.getGameBoard();
+                chessGame = loadGameMessage.getChessGame();
                 System.out.println(loadGameMessage.getGame(loadGameMessage.getPlayerColor()));
             }
             case NOTIFICATION -> {

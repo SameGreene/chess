@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -94,18 +95,26 @@ public class ChessBoard implements Cloneable{
         return Arrays.deepEquals(board, that.board);
     }
 
+    // COLORS
+    String reset = "\u001B[0m";
+    String black = "\u001B[30m";
+    String red = "\u001B[31m";
+    String blue = "\u001B[34m";
+    String bgWhite = "\u001B[47m";
+    String bgBlack = "\u001B[40m";
+
     public String toString(String teamColor) {
         StringBuilder sb = new StringBuilder();
-        String reset = "\u001B[0m";
-        String black = "\u001B[30m";
-        String red = "\u001B[31m";
-        String blue = "\u001B[34m";
-        String bgWhite = "\u001B[47m";
-        String bgBlack = "\u001B[40m";
 
+        sb = buildBoard(teamColor, sb, reset, black, red, blue, bgWhite, bgBlack);
+
+        return sb.toString();
+    }
+
+    private StringBuilder buildBoard(String teamColor, StringBuilder sb, String reset, String black, String red, String blue, String bgWhite, String bgBlack) {
         sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
 
-        if (teamColor.equals("WHITE")) {
+        if (teamColor == null || teamColor.equals("WHITE")) {
             for (int i = 7; i >= 0; i--) {
                 appendRow(sb, i, reset, black, red, blue, bgWhite, bgBlack);
             }
@@ -116,8 +125,68 @@ public class ChessBoard implements Cloneable{
         }
 
         sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
+        return sb;
+    }
 
+    public String toStringHighlighted(String teamColor, Collection<ChessMove> possibleMoves) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
+
+        if (teamColor.equals("WHITE")) {
+            for (int i = 7; i >= 0; i--) {
+                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves);
+            }
+        } else {
+            for (int i = 0; i < 8; i++) {
+                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves);
+            }
+        }
+
+        sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
         return sb.toString();
+    }
+
+    private StringBuilder appendHighlightedRow(StringBuilder sb, int i, String reset, String black, String red, String blue, String bgWhite, String bgBlack, Collection<ChessMove> possibleMoves) {
+        sb.append(black).append(String.format("%2d", i + 1)).append(" ");
+        for (int j = 0; j < 8; j++) {
+            ChessPosition currentPosition = new ChessPosition(i, j);
+            String bg = ((i + j) % 2 == 0) ? bgWhite : bgBlack;
+            if (isPossibleMove(currentPosition, possibleMoves)) {
+                sb.append("\u001B[32m");  // ANSI escape code for green
+            }
+            if (board[i][j] == null) {
+                sb.append(bg).append(String.format("%3s", " ")).append(reset); // Increased space for empty squares
+            } else {
+                String color = (board[i][j].getTeamColor() == ChessGame.TeamColor.WHITE) ? red : blue;
+                char pieceChar;
+                switch (board[i][j].getPieceType()) {
+                    case PAWN: pieceChar = 'P'; break;
+                    case ROOK: pieceChar = 'R'; break;
+                    case KNIGHT: pieceChar = 'N'; break;
+                    case BISHOP: pieceChar = 'B'; break;
+                    case KING: pieceChar = 'K'; break;
+                    case QUEEN: pieceChar = 'Q'; break;
+                    default: pieceChar = ' '; break;
+                }
+                sb.append(bg).append(color).append(" ").append(pieceChar).append(" ").append(reset); // Added a space before and after each piece
+            }
+            if (isPossibleMove(currentPosition, possibleMoves)) {
+                sb.append("\u001B[0m");  // ANSI escape code to reset color
+            }
+        }
+        sb.append(black).append(" ").append(String.format("%2d", i + 1)).append(reset).append("\n");
+
+        return sb;
+    }
+
+    private boolean isPossibleMove(ChessPosition position, Collection<ChessMove> possibleMoves) {
+        for (ChessMove move : possibleMoves) {
+            if (move.getEndPosition().equals(position)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void appendRow(StringBuilder sb, int i, String reset, String black, String red, String blue, String bgWhite, String bgBlack) {
