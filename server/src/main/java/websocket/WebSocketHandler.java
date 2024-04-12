@@ -131,7 +131,7 @@ public class WebSocketHandler {
                     game.makeMove(moveToMake);
                     gameObj.setGame(gameID - 1, gameData);
                     // Load the game for everyone
-                    var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+                    var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game, game.getTeamTurn());
                     manager.broadcastAll(loadGameMessage, gameID);
                     // Notify everyone else that a move was made by the player
                     var moveMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
@@ -172,7 +172,7 @@ public class WebSocketHandler {
         String blackUser = gameData.blackUsername();
         if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
             // Send back a load game message with a game inside it to the user who just joined
-            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game, playerColor);
             manager.broadcastUser(loadGameMessage, gameID, authToken);
         } else {
             var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
@@ -194,7 +194,7 @@ public class WebSocketHandler {
         gameCheck(authToken, gameID, gameData);
 
         if (foundAuth) {
-            var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game());
+            var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game(), null);
             manager.broadcastUser(observeMessage, gameID, authToken);
 
             var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)

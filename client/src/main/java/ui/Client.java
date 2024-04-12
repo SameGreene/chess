@@ -1,6 +1,8 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.GameData;
 import chess.ChessBoard;
@@ -27,7 +29,7 @@ public class Client implements NotificationHandler {
     public static NotificationHandler notificationHandler;
 
     public Client(String[] args) throws Exception {
-        webSocketFacade = new WebSocketFacade("http://localhost:3030", this);
+        webSocketFacade = new WebSocketFacade("http://localhost:" + args[0], this);
         serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
     }
 
@@ -37,6 +39,7 @@ public class Client implements NotificationHandler {
 
     private static ChessBoard board = null;
     private static String teamColor = null;
+    private static int gameID;
 
     // STATES
     // 0 - PRE-LOGIN
@@ -80,45 +83,7 @@ public class Client implements NotificationHandler {
 
                 // In a game
                 case 2:
-                    String gameInput = userInput.nextLine();
-                    String[] splitGameInput = gameInput.split("\\s+");
-
-                    // redraw
-                    if (splitGameInput[0].equals("redraw")) {
-                        System.out.println(board.toString(teamColor));
-                    }
-                    // leave
-                    else if (splitGameInput[0].equals("leave")) {
-//                        System.out.println("Exiting... Goodbye!");
-//                        return;
-                    }
-                    // move
-                    else if (splitGameInput[0].equals("move")){
-                        // Translate input from commandline into a ChessMove
-
-                    }
-                    // resign
-                    else if (splitGameInput[0].equals("resign")){
-
-                    }
-                    // highlight
-                    else if (splitGameInput[0].equals("resign")){
-
-                    }
-                    // help
-                    else if (splitGameInput[0].equals("help")) {
-                        System.out.println("redraw" + blueColor + " - Redraw the board in its current state" + defaultColor);
-                        System.out.println("leave" + blueColor + " - Leave the current match" + defaultColor);
-                        System.out.println("move <FROM_HERE> <TO_HERE>" + blueColor + " - Move a piece" + defaultColor);
-                        System.out.println("resign" + blueColor + " - Admit defeat" + defaultColor);
-                        System.out.println("highlight" + blueColor + " - Highlight all possible moves" + defaultColor);
-                        System.out.println("help" + blueColor + " - List available commands" + defaultColor);
-                    }
-
-                    // error handling
-                    else {
-                        System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands.");
-                    }
+                    inGame(args, client, userInput);
                     break;
 
                 // Error encountered. Exit the program
@@ -126,6 +91,66 @@ public class Client implements NotificationHandler {
                     System.out.println("Unknown state error occurred. Exiting...");
                     return;
             }
+        }
+    }
+
+    private static void inGame(String[] args, Client client, Scanner userInput) {
+        String[] splitGameInput = userInput.nextLine().split("\\s+");
+
+        // redraw
+        if (splitGameInput[0].equals("redraw")) {
+            System.out.println(board.toString(teamColor));
+        }
+        // leave
+        else if (splitGameInput[0].equals("leave")) {
+            try {
+                client.webSocketFacade.leaveGame(serverFacade.getAuthToken(), gameID);
+                userState = 1;
+                System.out.println("Left game. Type 'help' for a list of commands.");
+            } catch (Exception e) {
+                System.out.println("Failed to leave game. Please type 'help' for a list of commands.");
+            }
+
+        }
+        // move
+        else if (splitGameInput[0].equals("move")){
+            // Translate input from commandline into a ChessMove
+            String from = splitGameInput[1];
+            ChessPosition fromPos = new ChessPosition(from.charAt(0) - 'a', from.charAt(1) - '1');
+            String to = splitGameInput[2];
+            ChessPosition toPos = new ChessPosition(to.charAt(0) - 'a', to.charAt(1) - '1');
+
+            try {
+                client.webSocketFacade.makeMove(serverFacade.getAuthToken(), gameID, new ChessMove(fromPos, toPos, null));
+            } catch (Exception e){System.out.println("Failed to send move. Ensure it is a valid move.");}
+        }
+        // resign
+        else if (splitGameInput[0].equals("resign")){
+            try {
+                client.webSocketFacade.resign(serverFacade.getAuthToken(), gameID);
+                userState = 1;
+                System.out.println("Resigned. Type 'help' for a list of commands.");
+            } catch (Exception e) {
+                System.out.println("Failed to resign. Please type 'help' for a list of commands.");
+            }
+        }
+        // highlight
+        else if (splitGameInput[0].equals("highlight")){
+            // Highlight all possible moves given a piece
+        }
+        // help
+        else if (splitGameInput[0].equals("help")) {
+            System.out.println("redraw" + blueColor + " - Redraw the board in its current state" + defaultColor);
+            System.out.println("leave" + blueColor + " - Leave the current match" + defaultColor);
+            System.out.println("move <FROM_HERE> <TO_HERE> (ColumnRow, i.e. d7)" + blueColor + " - Move a piece" + defaultColor);
+            System.out.println("resign" + blueColor + " - Admit defeat" + defaultColor);
+            System.out.println("highlight <PIECE_HERE>" + blueColor + " - Highlight all possible moves for a given piece" + defaultColor);
+            System.out.println("help" + blueColor + " - List available commands" + defaultColor);
+        }
+
+        // error handling
+        else {
+            System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands.");
         }
     }
 
@@ -221,9 +246,9 @@ public class Client implements NotificationHandler {
                 ChessGame.TeamColor teamColorType = ChessGame.TeamColor.valueOf(teamColor.toUpperCase());
                 try {
                     client.webSocketFacade.joinGameAsPlayer(serverFacade.getAuthToken(), gameID, teamColorType);
-                    board = response.game.getBoard();
-                    System.out.println(board.toString(teamColor));
+                    gameID = gameID;
                     isPlayer = true;
+                    System.out.println("Joined successfully. Type 'help' for a list of commands.");
                     userState = 2;
                 } catch (Exception e){System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");}
             } catch (Exception e){System.out.println("HTTP request failed. Please type 'help' for a list of commands.");}
@@ -234,11 +259,12 @@ public class Client implements NotificationHandler {
 
             try {
                 JoinGameResponse response =  client.serverFacade.join(null, gameID);
-                client.webSocketFacade.joinGameAsObserver(serverFacade.getAuthToken(), gameID);
-                board = response.game.getBoard();
-                board.resetBoard();
-                System.out.println(board.toString("WHITE"));
-                userState = 2;
+                try {
+                    client.webSocketFacade.joinGameAsObserver(serverFacade.getAuthToken(), gameID);
+                    isPlayer = false;
+                    System.out.println("Joined successfully. Type 'help' for a list of commands.");
+                    userState = 2;
+                } catch (Exception e){System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");}
             } catch (Exception e){System.out.println("Failed to observe. Please type 'help' for a list of commands.");}
         }
         // logout
@@ -275,15 +301,16 @@ public class Client implements NotificationHandler {
         switch (serverMessage.getServerMessageType()) {
             case LOAD_GAME -> {
                 LoadGame loadGameMessage = new Gson().fromJson(game, LoadGame.class);
-                // Load game
+                board = loadGameMessage.getGameBoard();
+                System.out.println(loadGameMessage.getGame(loadGameMessage.getPlayerColor()));
             }
             case NOTIFICATION -> {
                 Notification notification = new Gson().fromJson(game, Notification.class);
-                // Notify
+                System.out.println(notification.getMessage());
             }
             case ERROR -> {
                 Error errorMessage = new Gson().fromJson(game, Error.class);
-                // Error
+                System.out.println(errorMessage.getErrorMessage());
             }
         }
     }
