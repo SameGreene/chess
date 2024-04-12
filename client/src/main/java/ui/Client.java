@@ -31,6 +31,13 @@ public class Client implements NotificationHandler {
         serverFacade = new ServerFacade("http://localhost", Integer.parseInt(args[0]));
     }
 
+    // TEXT COLORS
+    private final static String defaultColor = "\u001B[0m";
+    private final static String blueColor = "\u001B[34m";
+
+    private static ChessBoard board = null;
+    private static String teamColor = null;
+
     // STATES
     // 0 - PRE-LOGIN
     // 1 - POST-LOGIN
@@ -123,15 +130,7 @@ public class Client implements NotificationHandler {
     }
 
     private static void preLogin(String[] args, Client client, Scanner userInput) {
-        // TEXT COLORS
-        String defaultColor = "\u001B[0m";
-        String blueColor = "\u001B[34m";
-
-        ChessBoard board = null;
-        String teamColor = null;
-
-        String preInput = userInput.nextLine();
-        String[] splitPreInput = preInput.split("\\s+");
+        String[] splitPreInput = userInput.nextLine().split("\\s+");
         // register
         if (splitPreInput[0].equals("register") && splitPreInput.length == 4) {
             String username = splitPreInput[1];
@@ -182,15 +181,7 @@ public class Client implements NotificationHandler {
     }
 
     private static void loggedIn(String[] args, Client client, Scanner userInput) {
-        // TEXT COLORS
-        String defaultColor = "\u001B[0m";
-        String blueColor = "\u001B[34m";
-
-        ChessBoard board = null;
-        String teamColor = null;
-
-        String postInput = userInput.nextLine();
-        String[] splitPostInput = postInput.split("\\s+");
+        String[] splitPostInput = userInput.nextLine().split("\\s+");
         // create
         if (splitPostInput[0].equals("create") && splitPostInput.length == 2) {
             String gameName = splitPostInput[1];
@@ -199,9 +190,7 @@ public class Client implements NotificationHandler {
                 CreateGameResponse response = client.serverFacade.create(gameName);
                 // Successful. Print success message
                 System.out.println("Successfully created game " + blueColor + gameName + defaultColor);
-            } catch (Exception e) {
-                System.out.println("Failed to create game. Be sure you gave the game a unique name. Please type 'help' for a list of commands.");
-            }
+            } catch (Exception e) {System.out.println("Failed to create game. Be sure you gave the game a unique name. Please type 'help' for a list of commands.");}
         }
         // list
         else if (splitPostInput[0].equals("list")) {
@@ -220,9 +209,7 @@ public class Client implements NotificationHandler {
                             defaultColor + " |");
                     listNum++;
                 }
-            } catch (Exception e) {
-                System.out.println("Couldn't retrieve list of games. Please type 'help' for a list of commands.");
-            }
+            } catch (Exception e) {System.out.println("Couldn't retrieve list of games. Please type 'help' for a list of commands.");}
         }
         // join with team color
         else if (splitPostInput[0].equals("join") && splitPostInput.length == 3) {
@@ -238,12 +225,8 @@ public class Client implements NotificationHandler {
                     System.out.println(board.toString(teamColor));
                     isPlayer = true;
                     userState = 2;
-                } catch (Exception e){
-                    System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");
-                }
-            } catch (Exception e){
-                System.out.println("HTTP request failed. Please type 'help' for a list of commands.");
-            }
+                } catch (Exception e){System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");}
+            } catch (Exception e){System.out.println("HTTP request failed. Please type 'help' for a list of commands.");}
         }
         // observe
         else if ((splitPostInput[0].equals("observe") && splitPostInput.length == 2) || (splitPostInput[0].equals("join") && splitPostInput.length == 2)) {
@@ -256,21 +239,16 @@ public class Client implements NotificationHandler {
                 board.resetBoard();
                 System.out.println(board.toString("WHITE"));
                 userState = 2;
-            } catch (Exception e){
-                System.out.println("Failed to observe. Please type 'help' for a list of commands.");
-            }
+            } catch (Exception e){System.out.println("Failed to observe. Please type 'help' for a list of commands.");}
         }
         // logout
         else if (splitPostInput[0].equals("logout")) {
             try {
                 client.serverFacade.logout();
-                // Successful. Print success message and move to pre stage
                 System.out.println("Successfully logged out.");
                 System.out.println("Type 'help' to get started.");
                 userState = 0;
-            } catch (Exception e){
-                System.out.println("Failed to log out. Please type 'help' for a list of commands.");
-            }
+            } catch (Exception e){System.out.println("Failed to log out. Please type 'help' for a list of commands.");}
         }
         // quit
         else if (splitPostInput[0].equals("quit")) {
@@ -288,9 +266,7 @@ public class Client implements NotificationHandler {
             System.out.println("help" + blueColor + " - List available commands" + defaultColor);
         }
         // error handling
-        else {
-            System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands.");
-        }
+        else {System.out.println("ERROR: Unknown command or incorrect syntax. Please type 'help' for a list of commands.");}
     }
 
     @Override
