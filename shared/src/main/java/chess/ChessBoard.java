@@ -101,6 +101,8 @@ public class ChessBoard implements Cloneable{
     String red = "\u001B[31m";
     String blue = "\u001B[34m";
     String bgWhite = "\u001B[47m";
+    String bgGreen = "\u001B[42m";
+    String bgYellow = "\u001B[43m";
     String bgBlack = "\u001B[40m";
 
     public String toString(String teamColor) {
@@ -128,18 +130,18 @@ public class ChessBoard implements Cloneable{
         return sb;
     }
 
-    public String toStringHighlighted(String teamColor, Collection<ChessMove> possibleMoves) {
+    public String toStringHighlighted(String teamColor, Collection<ChessMove> possibleMoves, ChessPosition yellowPos) {
         StringBuilder sb = new StringBuilder();
 
         sb.append(black).append(String.format("%4s", " ")).append("a  b  c  d  e  f  g  h").append(reset).append("\n");
 
-        if (teamColor.equals("WHITE")) {
+        if (teamColor == null || teamColor.equals("WHITE")) {
             for (int i = 7; i >= 0; i--) {
-                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves);
+                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves, yellowPos);
             }
         } else {
             for (int i = 0; i < 8; i++) {
-                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves);
+                sb = appendHighlightedRow(sb, i, reset, black, red, blue, bgWhite, bgBlack, possibleMoves, yellowPos);
             }
         }
 
@@ -147,16 +149,20 @@ public class ChessBoard implements Cloneable{
         return sb.toString();
     }
 
-    private StringBuilder appendHighlightedRow(StringBuilder sb, int i, String reset, String black, String red, String blue, String bgWhite, String bgBlack, Collection<ChessMove> possibleMoves) {
+    private StringBuilder appendHighlightedRow(StringBuilder sb, int i, String reset, String black, String red, String blue, String bgWhite, String bgBlack, Collection<ChessMove> possibleMoves, ChessPosition yellowPos) {
         sb.append(black).append(String.format("%2d", i + 1)).append(" ");
         for (int j = 0; j < 8; j++) {
-            ChessPosition currentPosition = new ChessPosition(i, j);
+            ChessPosition currentPosition = new ChessPosition(i + 1, j + 1);
             String bg = ((i + j) % 2 == 0) ? bgWhite : bgBlack;
+            sb.append(bg);
             if (isPossibleMove(currentPosition, possibleMoves)) {
-                sb.append("\u001B[32m");  // ANSI escape code for green
+                sb.append(bgGreen);
+            }
+            else if (currentPosition.equals(yellowPos)){
+                sb.append(bgYellow);
             }
             if (board[i][j] == null) {
-                sb.append(bg).append(String.format("%3s", " ")).append(reset); // Increased space for empty squares
+                sb.append(String.format("%3s", " ")).append(reset); // Increased space for empty squares
             } else {
                 String color = (board[i][j].getTeamColor() == ChessGame.TeamColor.WHITE) ? red : blue;
                 char pieceChar;
@@ -169,10 +175,7 @@ public class ChessBoard implements Cloneable{
                     case QUEEN: pieceChar = 'Q'; break;
                     default: pieceChar = ' '; break;
                 }
-                sb.append(bg).append(color).append(" ").append(pieceChar).append(" ").append(reset); // Added a space before and after each piece
-            }
-            if (isPossibleMove(currentPosition, possibleMoves)) {
-                sb.append("\u001B[0m");  // ANSI escape code to reset color
+                sb.append(color).append(" ").append(pieceChar).append(" ").append(reset); // Added a space before and after each piece
             }
         }
         sb.append(black).append(" ").append(String.format("%2d", i + 1)).append(reset).append("\n");
@@ -181,9 +184,11 @@ public class ChessBoard implements Cloneable{
     }
 
     private boolean isPossibleMove(ChessPosition position, Collection<ChessMove> possibleMoves) {
-        for (ChessMove move : possibleMoves) {
-            if (move.getEndPosition().equals(position)) {
-                return true;
+        if (possibleMoves != null) {
+            for (ChessMove move : possibleMoves) {
+                if (move.getEndPosition().equals(position)) {
+                    return true;
+                }
             }
         }
         return false;

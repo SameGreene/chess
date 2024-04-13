@@ -171,11 +171,10 @@ public class Client implements NotificationHandler {
             // Highlight all possible moves given a piece
                 // Local. No server interaction needed
             String pieceToCheck = splitGameInput[1];
-            ChessPosition piecePos = new ChessPosition(pieceToCheck.charAt(0) - 'a' + 1, pieceToCheck.charAt(1) - '0');
+            ChessPosition piecePos = new ChessPosition(pieceToCheck.charAt(1) - '0', pieceToCheck.charAt(0) - 'a' + 1);
             Collection<ChessMove> possibleMoves = chessGame.validMoves(piecePos);
             ChessBoard highlightedBoard = board;
-
-            System.out.println(highlightedBoard.toStringHighlighted("WHITE", possibleMoves));
+            System.out.println(highlightedBoard.toStringHighlighted(teamColor, possibleMoves, piecePos));
         }
         // help
         else if (splitGameInput[0].equals("help")) {

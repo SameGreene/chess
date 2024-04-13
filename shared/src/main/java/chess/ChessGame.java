@@ -67,7 +67,7 @@ public class ChessGame implements Cloneable {
         Collection<ChessMove> pieceMoves = new HashSet<>();
         Collection<ChessMove> valMoves = new HashSet<>();
 
-        if (currPiece.pieceMoves(chessBoard, startPosition).isEmpty()) {
+        if (currPiece == null || currPiece.pieceMoves(chessBoard, startPosition).isEmpty()) {
             return null;
         } else {
             pieceMoves = currPiece.pieceMoves(chessBoard, startPosition);
