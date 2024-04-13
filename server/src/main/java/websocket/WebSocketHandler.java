@@ -164,25 +164,33 @@ public class WebSocketHandler {
         }
         gameCheck(authToken, gameID, gameData);
 
-        // Is the user that is trying to join on the right team?
-        // If the requesting player is black, and their username matches the blackUsername, good to go
-        // Same for white
-        String reqUser = authObj.getUser(authToken);
-        String whiteUser = gameData.whiteUsername();
-        String blackUser = gameData.blackUsername();
-        if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
-            // Send back a load game message with a game inside it to the user who just joined
-            var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game, playerColor);
-            manager.broadcastUser(loadGameMessage, gameID, authToken);
-        } else {
-            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
+        // Is the game over?
+        if (gameData.game().isGameOver()) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The game is already over.");
             manager.broadcastUser(errorMessage, gameID, authToken);
         }
 
-        // Notify everyone else that the player has joined
-        var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                + defaultColor + " has joined the game.");
-        manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        else {
+            // Is the user that is trying to join on the right team?
+            // If the requesting player is black, and their username matches the blackUsername, good to go
+            // Same for white
+            String reqUser = authObj.getUser(authToken);
+            String whiteUser = gameData.whiteUsername();
+            String blackUser = gameData.blackUsername();
+            if ((playerColor == ChessGame.TeamColor.BLACK && reqUser.equals(blackUser)) || (playerColor == ChessGame.TeamColor.WHITE && reqUser.equals(whiteUser))) {
+                // Send back a load game message with a game inside it to the user who just joined
+                var loadGameMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, game, playerColor);
+                manager.broadcastUser(loadGameMessage, gameID, authToken);
+            } else {
+                var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "You are not on that team.");
+                manager.broadcastUser(errorMessage, gameID, authToken);
+            }
+
+            // Notify everyone else that the player has joined
+            var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                    + defaultColor + " has joined the game.");
+            manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        }
     }
 
     private void joinGameAsObserver(String authToken, int gameID, Session session) throws IOException {
@@ -193,13 +201,21 @@ public class WebSocketHandler {
         GameData gameData = gameObj.getGame(gameID - 1);
         gameCheck(authToken, gameID, gameData);
 
-        if (foundAuth) {
-            var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game(), null);
-            manager.broadcastUser(observeMessage, gameID, authToken);
+        // Is the game over?
+        if (gameData.game().isGameOver()) {
+            var errorMessage = new Error(ServerMessage.ServerMessageType.ERROR, "The game is already over. Type 'help' for a list of commands.");
+            manager.broadcastUser(errorMessage, gameID, authToken);
+        }
 
-            var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
-                    + defaultColor + " has joined the game.");
-            manager.broadcastAllButOne(joinMessage, gameID, authToken);
+        else {
+            if (foundAuth) {
+                var observeMessage = new LoadGame(ServerMessage.ServerMessageType.LOAD_GAME, gameObj.getGame(gameID - 1).game(), null);
+                manager.broadcastUser(observeMessage, gameID, authToken);
+
+                var joinMessage = new Notification(ServerMessage.ServerMessageType.NOTIFICATION, "User " + blueColor + authObj.getUser(authToken)
+                        + defaultColor + " has joined the game.");
+                manager.broadcastAllButOne(joinMessage, gameID, authToken);
+            }
         }
     }
 

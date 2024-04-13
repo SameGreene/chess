@@ -39,6 +39,8 @@ public class Client implements NotificationHandler {
     private final static String defaultColor = "\u001B[0m";
     private final static String blueColor = "\u001B[34m";
 
+    private static boolean isPlayer;
+
     private static ChessBoard board = null;
     private static String teamColor = null;
     private static int gameID;
@@ -48,8 +50,8 @@ public class Client implements NotificationHandler {
     // 0 - PRE-LOGIN
     // 1 - POST-LOGIN
     // 2 - GAMEPLAY
+    // 3 - WAITING
     private static int userState;
-    private static boolean isPlayer;
 
     public static void main(String[] args) throws Exception {
         Client client = new Client(args);
@@ -58,9 +60,6 @@ public class Client implements NotificationHandler {
 
         // Start in pre-login
         userState = 0;
-
-        // Player vs Observer
-        isPlayer = false;
 
         // User input Scanner
         Scanner userInput = new Scanner(System.in);
@@ -71,6 +70,8 @@ public class Client implements NotificationHandler {
 
         ChessBoard board = null;
         String teamColor = null;
+
+        isPlayer = false;
 
         while (true) {
             switch (userState) {
@@ -89,10 +90,25 @@ public class Client implements NotificationHandler {
                     inGame(args, client, userInput);
                     break;
 
+                case 3:
+                    waiting(args, client, userInput);
+                    break;
+
                 // Error encountered. Exit the program
                 default:
                     System.out.println("Unknown state error occurred. Exiting...");
                     return;
+            }
+        }
+    }
+
+    private static void waiting(String[] args, Client client, Scanner userInput) {
+        while (userState == 3) {
+            System.out.println("Attempting to join...");
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }
@@ -117,22 +133,35 @@ public class Client implements NotificationHandler {
         }
         // move
         else if (splitGameInput[0].equals("move")){
-            // Translate input from commandline into a ChessMove
-            String from = splitGameInput[1];
-            ChessPosition fromPos = new ChessPosition(from.charAt(0) - 'a' + 1, from.charAt(1) - '0');
-            String to = splitGameInput[2];
-            ChessPosition toPos = new ChessPosition(to.charAt(0) - 'a' + 1, to.charAt(1) - '0');
+            // Is it a valid player?
+            if (isPlayer) {
+                // Translate input from commandline into a ChessMove
+                String from = splitGameInput[1];
+                ChessPosition fromPos = new ChessPosition(from.charAt(0) - 'a' + 1, from.charAt(1) - '0');
+                String to = splitGameInput[2];
+                ChessPosition toPos = new ChessPosition(to.charAt(0) - 'a' + 1, to.charAt(1) - '0');
 
-            try {
-                client.webSocketFacade.makeMove(serverFacade.getAuthToken(), gameID, new ChessMove(fromPos, toPos, null));
-            } catch (Exception e){System.out.println("Failed to send move. Ensure it is a valid move.");}
+                try {
+                    client.webSocketFacade.makeMove(serverFacade.getAuthToken(), gameID, new ChessMove(fromPos, toPos, null));
+                } catch (Exception e){System.out.println("Failed to send move. Ensure it is a valid move.");}
+            }
+            else {
+                System.out.println("Cannot move as an observer. Type 'help' for a list of commands");
+            }
         }
         // resign
         else if (splitGameInput[0].equals("resign")){
             try {
-                client.webSocketFacade.resign(serverFacade.getAuthToken(), gameID);
-                userState = 1;
-                System.out.println("Resigned. Type 'help' for a list of commands.");
+                if (isPlayer) {
+                    client.webSocketFacade.resign(serverFacade.getAuthToken(), gameID);
+                    userState = 1;
+                    System.out.println("Resigned. Type 'help' for a list of commands.");
+                    // Mark game as game over and leave back to lobby
+                    isPlayer = false;
+                }
+                else {
+                    System.out.println("Cannot resign as an observer. Type 'help' for a list of commands");
+                }
             } catch (Exception e) {
                 System.out.println("Failed to resign. Please type 'help' for a list of commands.");
             }
@@ -248,32 +277,31 @@ public class Client implements NotificationHandler {
         }
         // join with team color
         else if (splitPostInput[0].equals("join") && splitPostInput.length == 3) {
-            int gameID = Integer.parseInt(splitPostInput[1]);
+            int joinGameID = Integer.parseInt(splitPostInput[1]);
             teamColor = splitPostInput[2];
+            gameID = joinGameID;
 
             try {
                 JoinGameResponse response = client.serverFacade.join(teamColor, gameID);
                 ChessGame.TeamColor teamColorType = ChessGame.TeamColor.valueOf(teamColor.toUpperCase());
                 try {
                     client.webSocketFacade.joinGameAsPlayer(serverFacade.getAuthToken(), gameID, teamColorType);
-                    gameID = gameID;
                     isPlayer = true;
-                    System.out.println("Joined successfully. Type 'help' for a list of commands.");
-                    userState = 2;
+                    userState = 3;
                 } catch (Exception e){System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");}
             } catch (Exception e){System.out.println("HTTP request failed. Please type 'help' for a list of commands.");}
         }
         // observe
         else if ((splitPostInput[0].equals("observe") && splitPostInput.length == 2) || (splitPostInput[0].equals("join") && splitPostInput.length == 2)) {
-            int gameID = Integer.parseInt(splitPostInput[1]);
+            int joinGameID = Integer.parseInt(splitPostInput[1]);
+            gameID = joinGameID;
 
             try {
                 JoinGameResponse response =  client.serverFacade.join(null, gameID);
                 try {
                     client.webSocketFacade.joinGameAsObserver(serverFacade.getAuthToken(), gameID);
                     isPlayer = false;
-                    System.out.println("Joined successfully. Type 'help' for a list of commands.");
-                    userState = 2;
+                    userState = 3;
                 } catch (Exception e){System.out.println("WebSocket connection failed. Please type 'help' for a list of commands.");}
             } catch (Exception e){System.out.println("Failed to observe. Please type 'help' for a list of commands.");}
         }
@@ -313,15 +341,32 @@ public class Client implements NotificationHandler {
                 LoadGame loadGameMessage = new Gson().fromJson(game, LoadGame.class);
                 board = loadGameMessage.getGameBoard();
                 chessGame = loadGameMessage.getChessGame();
-                System.out.println(loadGameMessage.getGame(loadGameMessage.getPlayerColor()));
+                if (userState != 2) {
+                    if (isPlayer) {
+                        System.out.println("Joined successfully. Type 'help' for a list of commands.");
+                    }
+                    else {
+                        System.out.println("Observing successfully. Type 'help' for a list of commands.");
+                    }
+                }
+                userState = 2;
+                System.out.println(board.toString(teamColor));
             }
             case NOTIFICATION -> {
                 Notification notification = new Gson().fromJson(game, Notification.class);
                 System.out.println(notification.getMessage());
+
+                // When a player resigns
             }
             case ERROR -> {
                 Error errorMessage = new Gson().fromJson(game, Error.class);
                 System.out.println(errorMessage.getErrorMessage());
+
+                // Are we trying to join a game?
+                if (userState == 3) {
+                    // Send them back to the lobby
+                    userState = 1;
+                }
             }
         }
     }
