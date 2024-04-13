@@ -137,13 +137,13 @@ public class Client implements NotificationHandler {
             if (isPlayer) {
                 // Translate input from commandline into a ChessMove
                 String from = splitGameInput[1];
-                ChessPosition fromPos = new ChessPosition(from.charAt(0) - 'a' + 1, from.charAt(1) - '0');
+                ChessPosition fromPos = new ChessPosition(from.charAt(1) - '0', from.charAt(0) - 'a' + 1);
                 String to = splitGameInput[2];
-                ChessPosition toPos = new ChessPosition(to.charAt(0) - 'a' + 1, to.charAt(1) - '0');
+                ChessPosition toPos = new ChessPosition(to.charAt(1) - '0', to.charAt(0) - 'a' + 1);
 
                 try {
                     client.webSocketFacade.makeMove(serverFacade.getAuthToken(), gameID, new ChessMove(fromPos, toPos, null));
-                } catch (Exception e){System.out.println("Failed to send move. Ensure it is a valid move.");}
+                } catch (Exception e){System.out.println("Failed to process move move. Ensure it is a valid move.");}
             }
             else {
                 System.out.println("Cannot move as an observer. Type 'help' for a list of commands");
