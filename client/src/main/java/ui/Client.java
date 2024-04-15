@@ -354,8 +354,6 @@ public class Client implements NotificationHandler {
             case NOTIFICATION -> {
                 Notification notification = new Gson().fromJson(game, Notification.class);
                 System.out.println(notification.getMessage());
-
-                // When a player resigns
             }
             case ERROR -> {
                 Error errorMessage = new Gson().fromJson(game, Error.class);
